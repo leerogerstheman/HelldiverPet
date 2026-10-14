@@ -1,0 +1,887 @@
+/* ==========================================================================
+   绝地潜兵桌宠 · 渲染层样式
+   坐标系：舞台固定 300 × 400（与 SVG viewBox 一致），再整体 scale 到窗口大小。
+   ========================================================================== */
+
+:root {
+  --scale: 1;
+  --amber: #f2a63b;
+  --amber-dim: #b97a22;
+  --panel: #141a26;
+  --ink: #e8edf5;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
+
+#stage {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 300px;
+  height: 400px;
+  margin-left: -150px;
+  transform: scale(var(--scale));
+  transform-origin: bottom center;
+}
+
+/* ==========================================================================
+   皮肤
+   ==========================================================================
+   helldiver.js 里所有部件都只用语义 class，颜色全部由这里的 CSS 变量注入，
+   换皮肤 = 换一个 class，不需要重建 SVG。
+
+   配色依据：
+     B-01 Tactical  官方 1:1 复刻 / Dark Horse 描述 = 深黑装甲壳 + 双黄条
+     其余为 Helldivers Wiki 上有据可查的装甲套装，色板按其视觉印象还原。
+   -------------------------------------------------------------------------- */
+
+#stage {
+  /* 默认兜底 = B-01 Tactical */
+  --arm-a: #353b45;
+  --arm-b: #262c35;
+  --arm-c: #14181f;
+  --arm-h: #4d5563;
+  --trim: #f2c230;
+  --trim-2: #ffe08a;
+  --visor: #05070a;
+  --visor-glow: #7fd8ff;
+  --cape-a: #1c2440;
+  --cape-mark: #ffffff;
+  --gun-a: #3a424e;
+  --gun-b: #57606d;
+  --txt: #11161f;
+  --bulk: 1;
+  --helmet-lift: 0;
+}
+
+/* --- 部件上色 --- */
+.pa  { fill: var(--arm-a); }
+.pb  { fill: var(--arm-b); }
+.pc  { fill: var(--arm-c); }
+.pd  { fill: #000; opacity: 0.35; }
+.pah { stroke: var(--arm-h); fill: none; }
+.ph  { fill: var(--arm-c); }
+.phs { stroke: var(--arm-h); fill: none; }
+.pm  { fill: var(--cape-mark); }
+.pt  { fill: var(--trim); stroke: none; }
+.pstripe { fill: var(--trim); }
+.ptxt { fill: var(--txt); font-weight: 800; }
+
+/* 黄色只当细描边 / 环带用，不是大色块 —— 这是原版的关键特征 */
+.ptl   { fill: none; stroke: var(--trim-2); }
+.ptarm { fill: none; stroke: var(--trim); }
+.pkn   { fill: var(--trim); }
+.plg   { fill: var(--trim); opacity: 0.28; }
+.psole { fill: #0f1216; }
+.peagle{ fill: var(--emblem); }
+
+.pcape-shade { fill: #000; opacity: 0.30; }
+
+/* 裙甲 / 膝甲 / 颈圈 —— 原版这三块都是显眼的部件 */
+.pskirt { fill: var(--arm-b); }
+.pknee  { fill: var(--trim); }
+.pcollar{ fill: var(--arm-c); }
+.pbb    { fill: var(--emblem); }
+
+/* 头盔：镜面面罩 + 呼吸罩 */
+.pshell  { fill: url(#gShell); }
+.pshell2 { fill: #000; opacity: 0.28; }
+.pbreath { fill: var(--arm-c); }
+.pbreath2 { fill: #000; opacity: 0.45; }
+.pvalve  { }
+.pv   { fill: url(#gVisor); }
+.pvl  { stroke: var(--visor); fill: none; }
+.pgloss { fill: #fff; }
+
+#vHi  { stop-color: var(--visor-hi); }
+#vMid { stop-color: var(--visor); }
+#vLo  { stop-color: var(--visor-lo); }
+#sHi  { stop-color: var(--shell-hi); }
+#sMid { stop-color: var(--arm-a); }
+#sLo  { stop-color: var(--arm-c); }
+
+.pgun1 { fill: var(--gun-a); }
+.pgun2 { fill: var(--gun-b); }
+.pguh { stroke: var(--gun-b); fill: none; }
+
+/* 骷髅徽记的空腔 */
+.sk-cut { fill: #14171c; }
+
+/* 披风图案：默认全部隐藏，由皮肤决定显示哪一个 */
+.cape-marks { display: none; }
+
+/* 体型：重甲更敦实。显式指定 transform-box / origin，否则 SVG 默认以
+   viewBox 中心为原点，躯干会被整个甩出去。 */
+.torso {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transform: scaleX(var(--bulk));
+}
+
+/* =========================== 皮肤定义 ===========================
+   配色对照官方渲染图：
+     B-01 Tactical = 深炭灰板甲 + 亮黄描边 + 镜面银面罩 + 近黑披风
+   其余为 Helldivers Wiki 上有据可查的装甲套装，色板按其视觉印象还原。
+   -------------------------------------------------------------------------- */
+
+#stage {
+  /* 默认兜底 = B-01 Tactical */
+  --arm-a: #474e58; --arm-b: #333941; --arm-c: #1e2228;
+  --arm-h: #69717c;
+  --shell-hi: #5e6670;
+  --trim: #f2c230; --trim-2: #ffe07a;
+  --emblem: #9ba4af;
+  --visor: #c6cfda; --visor-hi: #ffffff; --visor-lo: #838d9b;
+  --cape-a: #1b1e23; --cape-mark: #7f868f;
+  --gun-a: #3c4550; --gun-b: #59636f;
+  --txt: #101620;
+  --bulk: 1;
+}
+
+/* B-01 Tactical —— 默认中甲 */
+#stage.skin-b01 .cm-stars { display: block; }
+
+/* B-22 Model Citizen —— 全黑金属 + 冷银描边，单条纹 */
+#stage.skin-b22 {
+  --arm-a: #33373d; --arm-b: #24272c; --arm-c: #131518;
+  --arm-h: #565c65; --shell-hi: #474d55;
+  --trim: #c3cbd6; --trim-2: #e9eef4;
+  --emblem: #b6bec8;
+  --visor: #b6c0cc; --visor-hi: #ffffff; --visor-lo: #6f7986;
+  --cape-a: #101215; --cape-mark: #5a616a;
+  --gun-a: #2e3238; --gun-b: #454b53;
+  --bulk: 1.02;
+}
+#stage.skin-b22 .cm-plain { display: block; }
+
+/* SC-34 Infiltrator —— 轻甲：卡其土黄 + 单条黄线 + 军绿条纹披风 */
+#stage.skin-sc34 {
+  --arm-a: #7c7353; --arm-b: #5d5639; --arm-c: #3b3626;
+  --arm-h: #9c9270; --shell-hi: #958b68;
+  --trim: #d9bc52; --trim-2: #efd98c;
+  --emblem: #b3ae99;
+  --visor: #b9c6a8; --visor-hi: #f2ffe6; --visor-lo: #7e8c72;
+  --cape-a: #323c2a; --cape-mark: #b4c199;
+  --gun-a: #4a4c3c; --gun-b: #646856;
+  --bulk: 0.94;
+}
+#stage.skin-sc34 .cm-stripes { display: block; }
+
+/* FS-23 Battle Master —— 重甲：墨绿厚甲 + 金铜描边 + 骷髅披风 */
+#stage.skin-fs23 {
+  --arm-a: #3e4d43; --arm-b: #2c392f; --arm-c: #18201b;
+  --arm-h: #5a6d5e; --shell-hi: #4f6152;
+  --trim: #d9a441; --trim-2: #f0d493;
+  --emblem: #98a093;
+  --visor: #b9c6ae; --visor-hi: #f0ffe6; --visor-lo: #78866f;
+  --cape-a: #1b2620; --cape-mark: #c79a45;
+  --gun-a: #3d463c; --gun-b: #576357;
+  --bulk: 1.1;
+}
+#stage.skin-fs23 .cm-skull { display: block; }
+
+/* A-35 Recon（ODST 联动）—— 暗橄榄绿 + 橙色描边 + 单条纹 */
+#stage.skin-a35 {
+  --arm-a: #3d4632; --arm-b: #2c3322; --arm-c: #191e14;
+  --arm-h: #566347; --shell-hi: #4c5a3e;
+  --trim: #e07a2c; --trim-2: #ffb066;
+  --emblem: #a8ad9c;
+  --visor: #c3c8b4; --visor-hi: #fff4e6; --visor-lo: #7e8370;
+  --cape-a: #1d2418; --cape-mark: #c96f2e;
+  --gun-a: #3a412f; --gun-b: #525c44;
+  --bulk: 1;
+}
+#stage.skin-a35 .cm-plain { display: block; }
+
+/* TR-117 Alpha Commander —— 致敬彩蛋：经典绿甲 + 米白描边 + 鹰徽披风 */
+#stage.skin-tr117 {
+  --arm-a: #3f7041; --arm-b: #2c5030; --arm-c: #172b1b;
+  --arm-h: #5b945e; --shell-hi: #4c844e;
+  --trim: #e6e1c2; --trim-2: #f7f4e0;
+  --emblem: #bcbcae;
+  --visor: #c4e0b4; --visor-hi: #f4ffe8; --visor-lo: #7fa06e;
+  --cape-a: #1d3523; --cape-mark: #ddd8b8;
+  --gun-a: #3c473b; --gun-b: #566358;
+  --bulk: 1;
+}
+#stage.skin-tr117 .cm-eagle { display: block; }
+
+/* --- CE-74 Breaker（轻甲 / 工程挖掘主题）---
+   参考图：卡其色板甲 + 绯红内衬与腿甲 + 黑色战术背心 + 全盔防毒面具 */
+#stage.skin-ce74 {
+  --arm-a: #b3936a; --arm-b: #8b7350; --arm-c: #463a2c;
+  --arm-h: #c9ab80; --shell-hi: #bda079;
+  --trim: #c9a227; --trim-2: #e6d295;
+  --emblem: #d6cfc0;
+  --visor: #2a2620; --visor-hi: #6a6252; --visor-lo: #1a1712;
+  --cape-a: #6d2b25; --cape-mark: #c9a98a;
+  --gun-a: #5e564c; --gun-b: #7c7365;
+  --mask: #8f8674; --mask-in: #2e2a22;
+  --bulk: 0.96;
+}
+#stage.skin-ce74 .cm-stripes { display: block; }
+/* CE-74 的下半身是红色工装裤，不是卡其护腿 —— 参考图里红裤配卡其护膝/护肩，
+   红色才是这套最好认的特征。腿用的是通用 .pb（和其它部位共用 --arm-b），
+   所以这里按 id 单独压色，不动 --arm-b 以免波及全身板甲。 */
+#stage.skin-ce74 #legs .pb { fill: #9c2b22; }
+#stage.skin-ce74 #legs .plg { fill: #e0d8c6; opacity: 0.3; }
+/* 护膝用卡其色（--arm-a），不是通用的金色 trim —— 参考图就是红裤配卡其护膝 */
+#stage.skin-ce74 #legs .pknee { fill: var(--arm-a); }
+
+/* --- CW-22 Kodiak（重甲 / 熊）---
+   参考图：深灰头盔 + 红目镜 + 浅灰裙甲 */
+#stage.skin-cw22 {
+  --arm-a: #5a6067; --arm-b: #42464c; --arm-c: #22252a;
+  --arm-h: #79808a; --shell-hi: #6a707a;
+  --trim: #c9a227; --trim-2: #e8d59a;
+  --emblem: #c2c8cf;
+  --visor: #1a0a08; --visor-hi: #ff6a52; --visor-lo: #5c1a12;
+  --cape-a: #6e6458; --cape-mark: #9a9083;
+  --gun-a: #43484f; --gun-b: #5f6670;
+  --bulk: 1.18;
+}
+#stage.skin-cw22 .cm-skull { display: block; }
+
+/* --- CW-4 Arctic Ranger（轻甲 / 极地）---
+   参考图：深海军蓝装甲 + 橙色内衬与描边 + 橙红目镜 */
+#stage.skin-cw4 {
+  --arm-a: #33496a; --arm-b: #24344d; --arm-c: #131b28;
+  --arm-h: #4b668c; --shell-hi: #3e5678;
+  --trim: #c9631f; --trim-2: #f0a060;
+  --emblem: #c8d2e0;
+  --visor: #0e1219; --visor-hi: #ff8a3d; --visor-lo: #5a2a10;
+  --cape-a: #1e3555; --cape-mark: #4d7099;
+  --gun-a: #38445a; --gun-b: #52637b;
+  --bulk: 0.96;
+}
+#stage.skin-cw4 .cm-stars { display: block; }
+
+/* --- CW-9 White Wolf（中甲）---
+   参考图：米白板甲 + 黑色胸板 + 红色细描边 + 红目镜 */
+#stage.skin-cw9 {
+  --arm-a: #cdc8b6; --arm-b: #a49f8d; --arm-c: #55513f;
+  --arm-h: #e2ddcc; --shell-hi: #dcd7c6;
+  --trim: #b0392c; --trim-2: #e07a6a;
+  --emblem: #8e8875;
+  --visor: #140d0b; --visor-hi: #ff4a38; --visor-lo: #57160f;
+  --cape-a: #8b8674; --cape-mark: #b6b0a0;
+  --gun-a: #47463e; --gun-b: #635f55;
+  --bulk: 1.02;
+}
+#stage.skin-cw9 .cm-eagle { display: block; }
+
+/* =========================== 武器 =========================== */
+/* 六款共用挂点，只有当前选中的那款显示 */
+.wep { display: none; }
+#stage.wep-rifle  .wep-rifle,
+#stage.wep-mg43   .wep-mg43,
+#stage.wep-gr8    .wep-gr8,
+#stage.wep-flam40 .wep-flam40,
+#stage.wep-gl21   .wep-gl21,
+#stage.wep-apw1   .wep-apw1 { display: block; }
+
+.wg1 { fill: var(--gun-b); }
+.wg2 { fill: var(--gun-a); }
+.wg3 { fill: var(--gun-a); }
+.wg4 { fill: none; stroke: var(--gun-b); }
+.wg5 { stroke: var(--gun-b); fill: none; }
+
+/* --- CE-74 的防毒面具：戴上面罩、藏起镜面 visor --- */
+.alt-face { display: none; }
+#stage.skin-ce74 .alt-face { display: block; }
+#stage.skin-ce74 .pv,
+#stage.skin-ce74 .pgloss { display: none; }
+.pmask { fill: var(--mask, #8f8674); }
+.pmaskin { fill: var(--mask-in, #2e2a22); }
+/* =========================== 动画 =========================== */
+
+/* ---------------------------------------------------------------- 潜兵本体 */
+
+.diver-host {
+  position: absolute;
+  inset: 0;
+}
+
+.diver-svg {
+  position: absolute;
+  inset: 0;
+  width: 300px;
+  height: 400px;
+  overflow: visible;
+  /* 只有被「点亮」的实心部位才接收鼠标，透明区域自动穿透 */
+  pointer-events: none;
+}
+.diver-svg .part-body,
+.diver-svg .part-head { pointer-events: auto; cursor: grab; }
+
+/* --- 待机起伏 --- */
+#diver {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: bob 2.7s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50%      { transform: translateY(-6px) scaleY(1.015); }
+}
+
+/* --- 呼吸时影子收缩 --- */
+#shadow { animation: shadowPulse 2.7s ease-in-out infinite; transform-box: view-box; transform-origin: 0 0; }
+@keyframes shadowPulse {
+  0%, 100% { transform: scaleX(1); opacity: 0.9; }
+  50%      { transform: scaleX(0.9); opacity: 0.72; }
+}
+
+/* --- 披风飘动 --- */
+#cape {
+  transform-box: view-box;
+  transform-origin: 0 -180px;
+  animation: capeIdle 3.4s ease-in-out infinite;
+}
+@keyframes capeIdle {
+  0%, 100% { transform: skewX(-1.2deg) scaleX(1); }
+  50%      { transform: skewX(1.6deg) scaleX(1.025); }
+}
+
+/* --- 敬礼臂（两段式骨骼） --- */
+#diver .upper,
+#diver .forearm {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#diver #arm-gun {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ================================================================== 状态 */
+
+/* 敬礼 */
+#stage.is-salute .upper   { transform: rotate(148deg); }
+#stage.is-salute .forearm { transform: rotate(100deg); }
+/* 敬礼时握枪臂贴胸 */
+#stage.is-salute #arm-gun { transform: rotate(-14deg); }
+
+/* 跳跃 */
+#stage.is-jump #diver  { animation: jumpUp 0.62s cubic-bezier(0.3, 0.9, 0.4, 1) forwards; }
+#stage.is-jump #cape  { animation: capeFlicker 0.62s ease-in-out forwards; }
+@keyframes jumpUp {
+  0%   { transform: translateY(0) rotate(0deg); }
+  18%  { transform: translateY(4px) scaleY(0.93) scaleX(1.06); }   /* 蓄力下蹲 */
+  52%  { transform: translateY(-46px) rotate(-4deg); }
+  74%  { transform: translateY(-8px) rotate(2deg); }
+  88%  { transform: translateY(-4px) scaleY(0.98); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+@keyframes capeFlicker {
+  0%, 100% { transform: skewX(0deg); }
+  40%      { transform: skewX(-5deg) scaleX(1.05); }
+}
+
+/* 欢呼（双击命中） */
+#stage.is-cheer #diver { animation: cheer 0.9s ease-in-out forwards; }
+@keyframes cheer {
+  0%, 100% { transform: translateY(0); }
+  30%      { transform: translateY(-16px) rotate(-3deg); }
+  55%      { transform: translateY(-30px) rotate(3deg); }
+  80%      { transform: translateY(-6px); }
+}
+
+/* 拖拽中：被拎起来，披风乱飞、双腿下垂 */
+#stage.is-drag #diver {
+  animation: none;
+  transform: translateY(-10px) rotate(var(--drag-tilt, 0deg));
+  transition: transform 0.14s ease-out;
+}
+#stage.is-drag #cape  { animation: capeFly 0.45s ease-in-out infinite; }
+#stage.is-drag #leg-l { transform: rotate(16deg); }
+#stage.is-drag #leg-r { transform: rotate(-14deg); }
+#stage.is-drag #shadow { opacity: 0.25; transform: scaleX(0.7); }
+@keyframes capeFly {
+  0%, 100% { transform: skewX(-7deg) scaleX(1.06) rotate(0deg); }
+  50%      { transform: skewX(6deg) scaleX(1.12) rotate(2deg); }
+}
+
+/* 行走 */
+/* 行走摆腿：显式指定髋关节为轴心。
+   SVG 的 transform-origin 默认是 50% 50%，对 <g> 来说是整个 viewBox 的中心
+   （150,200），直接 rotate 会把整条腿甩到另一边去。 */
+#diver .leg-l, #diver .leg-r {
+  transform-box: view-box;
+  transition: transform 0.14s ease-out;
+}
+#diver #leg-l { transform-origin: -18px -100px; }
+#diver #leg-r { transform-origin: 18px -100px; }
+#stage.is-walk #leg-l { animation: stepL 0.52s ease-in-out infinite; }
+#stage.is-walk #leg-r { animation: stepR 0.52s ease-in-out infinite; }
+@keyframes stepL {
+  0%, 100% { transform: rotate(13deg) translateY(-2px); }
+  50%      { transform: rotate(-9deg) translateY(1px); }
+}
+@keyframes stepR {
+  0%, 100% { transform: rotate(-9deg) translateY(1px); }
+  50%      { transform: rotate(13deg) translateY(-2px); }
+}
+#stage.is-walk #diver { animation: walkBob 0.52s ease-in-out infinite; }
+@keyframes walkBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-4px) rotate(0deg); }
+}
+/* 注意：不要用 scale(-1,1) 做朝向翻转 —— 胸口盾牌上的 LIBERTY 字样会变成镜像。
+   改为用轻微侧倾表现行走方向。 */
+#stage.facing-left #diver  { animation-name: walkBobLeft; }
+#stage.facing-right #diver { animation-name: walkBobRight; }
+@keyframes walkBobLeft {
+  0%, 100% { transform: translateY(0) rotate(-1.6deg); }
+  50%      { transform: translateY(-4px) rotate(-2.4deg); }
+}
+@keyframes walkBobRight {
+  0%, 100% { transform: translateY(0) rotate(1.6deg); }
+  50%      { transform: translateY(-4px) rotate(2.4deg); }
+}
+
+/* 悬停：微微前倾 + 打招呼 */
+#stage.is-hover #diver { animation: hoverLean 1.6s ease-in-out infinite; }
+@keyframes hoverLean {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-3px) rotate(1deg); }
+}
+
+/* 轨道炮击：后仰 + 震屏 */
+#stage.is-orbital #diver { animation: recoil 0.5s cubic-bezier(2, 0.8, 3, 1) forwards; }
+@keyframes recoil {
+  0%   { transform: translateY(0) rotate(0deg); }
+  15%  { transform: translateY(6px) rotate(-6deg) scaleY(0.94); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+#stage.is-orbital #cape { animation: capeBlast 0.6s ease-out forwards; }
+@keyframes capeBlast {
+  0%, 100% { transform: skewX(0deg); }
+  20%      { transform: skewX(9deg) scaleX(1.15); }
+}
+
+/* 被吓到 */
+#stage.is-shock #diver { animation: shock 0.5s ease-out; }
+@keyframes shock {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20%      { transform: translateX(-6px) rotate(-3deg); }
+  45%      { transform: translateX(5px) rotate(3deg); }
+  70%      { transform: translateX(-3px) rotate(-1.5deg); }
+}
+
+/* 休息（超时无操作） */
+#stage.is-rest #diver { animation: rest 3.4s ease-in-out infinite; }
+@keyframes rest {
+  0%, 100% { transform: translateY(0) scaleY(1) rotate(0deg); }
+  50%      { transform: translateY(3px) scaleY(0.985) rotate(1deg); }
+}
+#stage.is-rest #cape { animation: capeIdle 5s ease-in-out infinite; }
+
+/* ================================================================== 气泡 */
+
+.bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 268px;
+  max-width: 244px;
+  min-width: 84px;
+  padding: 9px 14px 10px;
+  transform: translate(-50%, 8px) scale(0.92);
+  transform-origin: bottom center;
+  background: linear-gradient(180deg, rgba(24, 31, 44, 0.97), rgba(13, 18, 27, 0.97));
+  border: 2px solid var(--amber);
+  border-radius: 4px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55), inset 0 0 18px rgba(242, 166, 59, 0.1);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.42;
+  letter-spacing: 0.2px;
+  text-align: center;
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 5;
+}
+.bubble.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  pointer-events: auto;
+  cursor: pointer;
+}
+/* 气泡尖角 */
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--amber);
+  border-right: 2px solid var(--amber);
+  border-bottom: 2px solid var(--amber);
+}
+/* 强调语气 */
+.bubble.emph {
+  border-color: #e2483f;
+  /* 外发光要克制：之前 spread 太大，渲染出来像套了个红框 */
+  box-shadow: 0 4px 14px rgba(226, 72, 63, 0.22), inset 0 0 14px rgba(226, 72, 63, 0.08);
+}
+.bubble.emph::after { background: #e2483f; border-color: #e2483f; }
+
+/* ================================================================== 特效 */
+
+#fx { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+
+/* --- 粒子 --- */
+.spark {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: sparkFly 0.62s ease-out forwards;
+}
+@keyframes sparkFly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+
+/* --- 轨道炮击准星 --- */
+.orbital {
+  position: absolute;
+  left: 50%;
+  top: 168px;
+  width: 150px;
+  height: 150px;
+  margin-left: -75px;
+  opacity: 0;
+}
+.orbital.run { animation: orbitalIn 1.5s ease-out forwards; }
+@keyframes orbitalIn {
+  0%   { opacity: 0; transform: scale(2.4) rotate(-25deg); }
+  16%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  74%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(1.06) rotate(0deg); }
+}
+.orbital .reticle {
+  fill: none;
+  stroke: #e2483f;
+  stroke-width: 3;
+}
+.orbital .reticle-dim { fill: none; stroke: rgba(226, 72, 63, 0.35); stroke-width: 1.5; }
+.orbital .beam {
+  stroke: #ffd7d4;
+  stroke-width: 5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 10px rgba(226, 72, 63, 0.95));
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: beamIn 0.28s ease-out forwards;
+}
+@keyframes beamIn { to { stroke-dashoffset: 0; } }
+
+/* --- 战略配备输入盘 --- */
+.code-pad {
+  position: absolute;
+  left: 50%;
+  top: 128px;
+  width: 168px;
+  height: 168px;
+  margin-left: -84px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  background: radial-gradient(circle, rgba(14, 19, 29, 0.9) 55%, rgba(14, 19, 29, 0) 76%);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+}
+.code-pad.run { animation: padIn 1.25s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+@keyframes padIn {
+  0%   { opacity: 0; transform: scale(0.7) rotate(-18deg); }
+  14%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  78%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(1.18) rotate(0deg); }
+}
+.code-pad .key {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(242, 166, 59, 0.28);
+  border-radius: 7px;
+  background: rgba(22, 29, 42, 0.85);
+  color: rgba(242, 166, 59, 0.35);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  transition: all 0.08s ease;
+}
+.code-pad .key.hit {
+  background: var(--amber);
+  border-color: #ffd08a;
+  color: #16202f;
+  box-shadow: 0 0 18px rgba(242, 166, 59, 0.8);
+  transform: scale(1.12);
+}
+.code-pad .code-label {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+/* --- 屏幕震动 --- */
+#stage.shake { animation: shake 0.34s ease-out; }
+@keyframes shake {
+  0%, 100% { transform: scale(var(--scale)) translate(0, 0); }
+  20%      { transform: scale(var(--scale)) translate(-4px, 3px); }
+  45%      { transform: scale(var(--scale)) translate(4px, -3px); }
+  70%      { transform: scale(var(--scale)) translate(-2px, 2px); }
+}
+
+/* --- 昏迷星 --- */
+.dizzy {
+  position: absolute;
+  font-size: 17px;
+  animation: orbitStar 1.5s linear infinite;
+}
+@keyframes orbitStar {
+  0%   { transform: rotate(0deg) translateX(34px) rotate(0deg); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: rotate(360deg) translateX(34px) rotate(-360deg); opacity: 0; }
+}
+
+/* --- 右键菜单外的自绘提示（无需系统菜单时） --- */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 250px;
+  transform: translateX(-50%);
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: rgba(12, 17, 26, 0.9);
+  border: 1px solid rgba(242, 166, 59, 0.35);
+  color: rgba(232, 237, 245, 0.85);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 6;
+}
+.hint.show { opacity: 1; }
+
+/* ==========================================================================
+   特效
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- 鹰击空袭 */
+
+/* 一只鹰横穿屏幕，丢下弹幕后地面炸开 */
+.eagle {
+  position: absolute;
+  left: -70px;
+  top: 26px;
+  width: 58px;
+  height: 30px;
+  opacity: 0;
+}
+.eagle.run { animation: eagleFly 1.5s linear forwards; }
+.eagle svg { width: 100%; height: 100%; overflow: visible; }
+.eagle .w { fill: #2a303c; }
+.eagle .w2 { fill: #444d5e; }
+@keyframes eagleFly {
+  0%   { opacity: 0; transform: translate(-70px, 10px) scale(0.85); }
+  10%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(330px, -18px) scale(1.05); }
+}
+
+/* 地面爆炸：火球 + 冲击环 */
+.blast {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.blast.run { animation: blastPop 0.85s ease-out forwards; }
+@keyframes blastPop {
+  0%   { opacity: 0; transform: scale(0.3); background: #fff3c4; }
+  14%  { opacity: 1; transform: scale(2.2); background: #ffd24a; }
+  34%  { opacity: 1; transform: scale(6.5); background: #ff7a2a; }
+  62%  { opacity: 0.9; transform: scale(9.5); background: rgba(190, 60, 20, 0.5); }
+  100% { opacity: 0; transform: scale(12); background: rgba(120, 30, 10, 0); }
+}
+.shock {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 40px;
+  height: 14px;
+  margin-left: -20px;
+  border: 2.5px solid rgba(255, 210, 120, 0.9);
+  border-radius: 50%;
+  opacity: 0;
+}
+.shock.run { animation: shockRing 0.8s ease-out forwards; }
+@keyframes shockRing {
+  0%   { opacity: 0.95; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(4.5); }
+}
+
+/* ---------------------------------------------------------------- HMG 弹幕 */
+
+/* 架起一挺加特林，枪管旋转 + 枪口焰 */
+.hmg {
+  /* 放在身体右侧、脚边：放正中会被潜兵本体完全挡住 */
+  position: absolute;
+  left: 62%;
+  bottom: 4px;
+  width: 132px;
+  height: 66px;
+  margin-left: -66px;
+  opacity: 0;
+}
+.hmg.run { animation: hmgIn 2.6s ease-out forwards; }
+@keyframes hmgIn {
+  0%   { opacity: 0; transform: translateY(26px) scale(0.8); }
+  10%  { opacity: 1; transform: translateY(0) scale(1); }
+  84%  { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(16px) scale(0.9); }
+}
+.hmg .body { fill: #333b48; stroke: #1b212b; stroke-width: 2; }
+.hmg .barrel { fill: #4a5361; }
+.hmg .spin { transform-box: view-box; transform-origin: 20px 20px; animation: spin 0.16s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hmg .flash { fill: #ffd24a; opacity: 0; animation: muzzle 0.16s steps(2) infinite; }
+@keyframes muzzle { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+/* ---------------------------------------------------------------- 导弹雨 */
+
+.rocket {
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  width: 7px;
+  height: 22px;
+  margin-left: -3px;
+  border-radius: 3px 3px 1px 1px;
+  background: #cdd3dc;
+  opacity: 0;
+}
+.rocket::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 9px;
+  height: 14px;
+  margin-left: -4.5px;
+  background: radial-gradient(circle at 50% 0%, #ffe9a0, rgba(255, 140, 40, 0) 70%);
+}
+.rocket.run { animation: rocketArc 1.15s cubic-bezier(0.3, 0.1, 0.6, 1) forwards; }
+@keyframes rocketArc {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  16%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--rx), 96px) rotate(var(--rr)); }
+}
+
+/* ---------------------------------------------------------------- 晋升喝彩 */
+
+.confetti {
+  position: absolute;
+  left: 50%;
+  top: 120px;
+  width: 7px;
+  height: 11px;
+  opacity: 0;
+}
+.confetti.run { animation: confettiFall 1.7s cubic-bezier(0.25, 0.6, 0.5, 1) forwards; }
+@keyframes confettiFall {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--cx), var(--cy)) rotate(var(--cr)); }
+}
+
+.stamp {
+  position: absolute;
+  left: 50%;
+  top: 176px;
+  transform: translate(-50%, 0) rotate(-11deg) scale(2.4);
+  padding: 4px 14px;
+  border: 3px solid #f2c230;
+  border-radius: 4px;
+  background: rgba(18, 22, 31, 0.9);
+  color: #f2c230;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  white-space: nowrap;
+  opacity: 0;
+}
+.stamp.run { animation: stampIn 1.9s cubic-bezier(0.2, 1.4, 0.4, 1) forwards; }
+@keyframes stampIn {
+  0%   { opacity: 0; transform: translate(-50%, 0) rotate(-11deg) scale(2.4); }
+  14%  { opacity: 1; transform: translate(-50%, 0) rotate(-11deg) scale(1); }
+  72%  { opacity: 1; transform: translate(-50%, 0) rotate(-11deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -14px) rotate(-11deg) scale(1.06); }
+}
+
+/* ---------------------------------------------------------------- 护盾 / 提神 */
+
+.shield {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 190px;
+  height: 300px;
+  margin-left: -95px;
+  border-radius: 50% 50% 44% 44% / 42% 42% 58% 58%;
+  border: 2.5px solid rgba(120, 220, 150, 0.75);
+  box-shadow: 0 0 26px rgba(90, 200, 130, 0.45), inset 0 0 34px rgba(90, 200, 130, 0.22);
+  opacity: 0;
+  transform: scale(0.8);
+}
+.shield.run { animation: shieldUp 2.2s ease-out forwards; }
+@keyframes shieldUp {
+  0%   { opacity: 0; transform: scale(0.72); }
+  14%  { opacity: 1; transform: scale(1); }
+  74%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0; transform: scale(1.12); }
+}

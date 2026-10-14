@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>绝地潜兵桌宠</title>
+  <link rel="stylesheet" href="pet.css" />
+</head>
+<body>
+  <div id="stage" class="stage">
+    <!-- 特效层 -->
+    <div id="fx" aria-hidden="true"></div>
+
+    <!-- 台词气泡 -->
+    <div id="bubble" class="bubble" data-hit role="status" aria-live="polite"></div>
+
+    <!-- 操作提示 -->
+    <div id="hint" class="hint">左键互动 · 双击投送战略配备 · 右键菜单</div>
+
+    <!-- 潜兵本体（SVG 由 helldiver.js 注入） -->
+    <div id="diverHost" class="diver-host"></div>
+  </div>
+
+  <script src="helldiver.js"></script>
+  <script src="quotes.js"></script>
+  <script src="audio.js"></script>
+  <script src="pet.js"></script>
+</body>
+</html>

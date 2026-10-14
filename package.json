@@ -1,0 +1,57 @@
+{
+  "name": "helldiver-pet",
+  "productName": "HelldiverPet",
+  "version": "0.1.0-beta.1",
+  "description": "绝地潜兵2 桌宠 — 一只常驻桌面的民主战士",
+  "main": "src/main/main.js",
+  "author": "HelldiverPet Contributors",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leerogerstheman/HelldiverPet.git"
+  },
+  "homepage": "https://github.com/leerogerstheman/HelldiverPet#readme",
+  "bugs": {
+    "url": "https://github.com/leerogerstheman/HelldiverPet/issues"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "dist": "electron-builder --win",
+    "pack": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.helldiver.pet",
+    "productName": "HelldiverPet",
+    "publish": null,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "build/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "绝地潜兵桌宠"
+    },
+    "portable": {
+      "artifactName": "HelldiverPet-${version}-portable.exe"
+    }
+  }
+}

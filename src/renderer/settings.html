@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>绝地潜兵桌宠 · 设置</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-title">绝地潜兵桌宠</div>
+    <div class="bar-sub">MANAGED DEMOCRACY · PET CONFIG</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>装甲皮肤</h2>
+      <div class="skins" id="skins"></div>
+      <p class="hint-text">
+        配色参考 Helldivers Wiki 上的装甲套装；B-01 战术型的「深黑壳 + 双黄条」
+        来自 Dark Horse 官方 1:1 复刻的公开描述。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>武器</h2>
+      <div class="skins weps" id="weapons"></div>
+      <p class="hint-text">
+        武器外形对照 Helldivers Wiki 上的官方战略配备图标绘制。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>外观</h2>
+
+      <label class="row">
+        <span class="k">尺寸</span>
+        <span class="v" id="v-scale">100%</span>
+      </label>
+      <input type="range" id="scale" min="50" max="200" step="5" />
+
+      <label class="row">
+        <span class="k">不透明度</span>
+        <span class="v" id="v-opacity">100%</span>
+      </label>
+      <input type="range" id="opacity" min="30" max="100" step="5" />
+
+      <label class="check">
+        <input type="checkbox" id="alwaysOnTop" />
+        <span>始终置顶（推荐）</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>行为</h2>
+
+      <label class="check">
+        <input type="checkbox" id="autoWander" />
+        <span>随机巡逻（沿任务栏来回走动）</span>
+      </label>
+
+      <label class="row">
+        <span class="k">巡逻速度</span>
+        <span class="v" id="v-wander">18</span>
+      </label>
+      <input type="range" id="wanderSpeed" min="4" max="80" step="2" />
+
+      <label class="check">
+        <input type="checkbox" id="showBubble" />
+        <span>显示台词气泡</span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="sound" />
+        <span>音效（现场合成，无音频文件）</span>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>台词</h2>
+
+      <label class="row"><span class="k">语言</span></label>
+      <div class="seg" id="langSeg">
+        <button data-lang="cn" class="on">中文</button>
+        <button data-lang="en">English</button>
+      </div>
+
+      <p class="hint-text">
+        台词为致敬原作的玩家社区熟语，程序内不含任何游戏原始素材。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>系统</h2>
+      <label class="check">
+        <input type="checkbox" id="autoLaunch" />
+        <span>开机自启</span>
+      </label>
+
+      <div class="btns">
+        <button id="btnReset" class="btn">恢复默认</button>
+        <button id="btnDone" class="btn primary">完成</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      左键互动 · 双击投送战略配备 · 拖拽移动 · 滚轮缩放 · 右键菜单
+    </footer>
+  </main>
+
+  <script src="quotes.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>
