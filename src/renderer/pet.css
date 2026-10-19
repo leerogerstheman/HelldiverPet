@@ -68,6 +68,8 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --txt: #11161f;
   --bulk: 1;
   --helmet-lift: 0;
+  /* 墨线：三渲二的板件缝隙色 */
+  --ink-line: #0b0e12;
   /* 材质：织物 / 金属 / 橡胶 —— 分开才能画出「不同材料不同反光」 */
   --coat: #2f343b;
   --coat-hi: #4a5058;
@@ -127,11 +129,34 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 .plabel   { fill: #9aa3ad; }
 
 /* --- 光影层：主光高光 / 边光 / 环境遮蔽 --- */
-.pspec { fill: #ffffff; }
-.prim  { fill: none; stroke: #c8d4e2; }
+.pspec { fill: #ffffff; opacity: 0.55; }
+.prim  { fill: none; stroke: #dceaff; }
 .pao   { fill: #000; }
 .pshield { fill: var(--emblem); }
 .pblack  { fill: #14171c; }
+
+/* --- 墨线 / 硬边高光 ---
+   Helldivers 2 本身不是描边漫画风（对照官方渲染图和 Sketchfab 上的白模：
+   板件之间靠**黑色缝隙**分隔，靠**棱线上的高光**体现结构，没有统一墨线）。
+   所以这里不走「全身描边」那条路：
+     · 主体部件之间本来就有缝，色块边界天然是分隔线
+     · 亮面棱线单独画一条硬边高光，这是游戏真正在用的手法
+   墨线只留给「和浅色相邻」的部件（黄条、金属件），那里才看得见。 */
+#diver .pstripe2,
+#diver .pmetal,
+#diver .pkneem,
+#diver .pgun1,
+#diver .pgun2 {
+  stroke: var(--ink-line);
+  stroke-width: 1.05;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 硬边高光：亮面棱线，位置跟着主光（左上）走 */
+.phl  { fill: none; stroke: #eef4ff; stroke-width: 1.7; stroke-linecap: round; }
+.phl2 { fill: none; stroke: #eef4ff; stroke-width: 1.2; stroke-linecap: round; opacity: 0.55; }
+.phl3 { fill: none; stroke: #ffffff; stroke-width: 2.6; stroke-linecap: round; opacity: 0.8; }
 
 /* 裙甲 / 膝甲 / 颈圈 —— 原版这三块都是显眼的部件 */
 .pskirt { fill: var(--arm-b); }
@@ -149,22 +174,27 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 .pvl  { stroke: var(--visor); fill: none; }
 .pgloss { fill: #fff; }
 
-#vHi  { stop-color: var(--visor-hi); }
-#vMid { stop-color: var(--visor); }
-#vLo  { stop-color: var(--visor-lo); }
-/* 织物 / 金属 / 橡胶 / 涂装 的分层色标 */
-#cHi  { stop-color: var(--coat-hi); }
-#cMid { stop-color: var(--coat); }
-#cLo  { stop-color: var(--coat-lo); }
-#mHi  { stop-color: var(--metal-hi); }
-#mMid { stop-color: var(--metal); }
-#mLo  { stop-color: var(--metal-lo); }
-#rHi  { stop-color: var(--rubber-hi); }
-#rMid { stop-color: var(--rubber); }
-#rLo  { stop-color: var(--rubber-lo); }
-#tHi  { stop-color: var(--trim-hi); }
-#tMid { stop-color: var(--trim); }
-#tLo  { stop-color: var(--trim-lo); }
+#vHi, #vHi2   { stop-color: var(--visor-hi); }
+#vMid, #vMid2 { stop-color: var(--visor); }
+#vLo, #vLo2   { stop-color: var(--visor-lo); }
+/* 织物 / 金属 / 橡胶 / 涂装 的分层色标。
+   每一档都有两个同偏移的 stop，硬边色阶就是这么来的：
+   偏移相同 → 颜色直接跳变，不做过渡。 */
+#cHi, #cHi2   { stop-color: var(--coat-hi); }
+#cMid, #cMid2 { stop-color: var(--coat); }
+#cLo, #cLo2   { stop-color: var(--coat-lo); }
+#mHi, #mHi2   { stop-color: var(--metal-hi); }
+#mMid, #mMid2 { stop-color: var(--metal); }
+#mLo, #mLo2   { stop-color: var(--metal-lo); }
+#rHi, #rHi2   { stop-color: var(--rubber-hi); }
+#rMid, #rMid2 { stop-color: var(--rubber); }
+#rLo, #rLo2   { stop-color: var(--rubber-lo); }
+#tHi, #tHi2   { stop-color: var(--trim-hi); }
+#tMid, #tMid2 { stop-color: var(--trim); }
+#tLo, #tLo2   { stop-color: var(--trim-lo); }
+#sHi, #sHi2   { stop-color: var(--shell-hi); }
+#sMid, #sMid2 { stop-color: var(--arm-a); }
+#sLo, #sLo2   { stop-color: var(--arm-c); }
 #sHi  { stop-color: var(--shell-hi); }
 #sMid { stop-color: var(--arm-a); }
 #sLo  { stop-color: var(--arm-c); }

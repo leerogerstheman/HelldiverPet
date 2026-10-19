@@ -239,41 +239,64 @@ window.HELLDIVER_SVG = `
       <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
     </radialGradient>
 
-    <!-- 面罩：镜面反射渐变，颜色由 CSS 变量驱动 -->
+    <!-- ================= 材质渐变（三渲二：硬边色阶） =================
+         官方模型是硬表面风格：板件之间有黑缝，棱线上是硬边高光，
+         没有柔和过渡。所以每条渐变都拆成「两两同偏移」的色带，
+         边界处 offset 相同 → 颜色直接跳变，得到赛璐珞的三段明暗。 -->
+
+    <!-- 面罩：深色烟熏玻璃 + 镜面反光 -->
     <linearGradient id="gVisor" x1="0.12" y1="0" x2="0.6" y2="1">
-      <stop id="vHi" offset="0%"   stop-color="#ffffff"/>
-      <stop id="vMid" offset="40%"  stop-color="#c6cfda"/>
-      <stop id="vLo" offset="100%" stop-color="#7d8794"/>
+      <stop id="vHi"  offset="0"    stop-color="#b9c4d0"/>
+      <stop id="vHi2" offset="0.30" stop-color="#b9c4d0"/>
+      <stop id="vMid" offset="0.30" stop-color="#1b2027"/>
+      <stop id="vMid2" offset="0.74" stop-color="#1b2027"/>
+      <stop id="vLo"  offset="0.74" stop-color="#0c1015"/>
+      <stop id="vLo2" offset="1"    stop-color="#0c1015"/>
     </linearGradient>
     <!-- 盔壳：深色金属，主光来自左上 -->
     <linearGradient id="gShell" x1="0.18" y1="0" x2="0.78" y2="1">
-      <stop id="sHi" offset="0%"   stop-color="#5c646e"/>
-      <stop id="sMid" offset="50%"  stop-color="#3a4048"/>
-      <stop id="sLo" offset="100%" stop-color="#24282e"/>
+      <stop id="sHi"  offset="0"    stop-color="#5c646e"/>
+      <stop id="sHi2" offset="0.36" stop-color="#5c646e"/>
+      <stop id="sMid" offset="0.36" stop-color="#3a4048"/>
+      <stop id="sMid2" offset="0.72" stop-color="#3a4048"/>
+      <stop id="sLo"  offset="0.72" stop-color="#24282e"/>
+      <stop id="sLo2" offset="1"    stop-color="#24282e"/>
     </linearGradient>
     <!-- 风衣 / 战术服：哑光织物 -->
     <linearGradient id="gCoat" x1="0.12" y1="0" x2="0.88" y2="1">
-      <stop id="cHi" offset="0%"   stop-color="#4a5058"/>
-      <stop id="cMid" offset="42%"  stop-color="#2f343b"/>
-      <stop id="cLo" offset="100%" stop-color="#191c21"/>
+      <stop id="cHi"  offset="0"    stop-color="#4a5058"/>
+      <stop id="cHi2" offset="0.40" stop-color="#4a5058"/>
+      <stop id="cMid" offset="0.40" stop-color="#2f343b"/>
+      <stop id="cMid2" offset="0.76" stop-color="#2f343b"/>
+      <stop id="cLo"  offset="0.76" stop-color="#191c21"/>
+      <stop id="cLo2" offset="1"    stop-color="#191c21"/>
     </linearGradient>
-    <!-- 金属护片：胫甲 / 前臂护具 -->
+    <!-- 金属护片：胫甲 / 护膝 / 前臂护具 -->
     <linearGradient id="gMetal" x1="0.14" y1="0" x2="0.82" y2="1">
-      <stop id="mHi" offset="0%"   stop-color="#98a1ab"/>
-      <stop id="mMid" offset="48%"  stop-color="#6b737d"/>
-      <stop id="mLo" offset="100%" stop-color="#3d434b"/>
+      <stop id="mHi"  offset="0"    stop-color="#98a1ab"/>
+      <stop id="mHi2" offset="0.30" stop-color="#98a1ab"/>
+      <stop id="mMid" offset="0.30" stop-color="#6b737d"/>
+      <stop id="mMid2" offset="0.72" stop-color="#6b737d"/>
+      <stop id="mLo"  offset="0.72" stop-color="#3d434b"/>
+      <stop id="mLo2" offset="1"    stop-color="#3d434b"/>
     </linearGradient>
     <!-- 橡胶 / 塑料：面罩胶条、呼吸面甲 -->
     <linearGradient id="gRubber" x1="0.2" y1="0" x2="0.72" y2="1">
-      <stop id="rHi" offset="0%"   stop-color="#474d55"/>
-      <stop id="rMid" offset="54%"  stop-color="#2a2e34"/>
-      <stop id="rLo" offset="100%" stop-color="#15171b"/>
+      <stop id="rHi"  offset="0"    stop-color="#474d55"/>
+      <stop id="rHi2" offset="0.34" stop-color="#474d55"/>
+      <stop id="rMid" offset="0.34" stop-color="#2a2e34"/>
+      <stop id="rMid2" offset="0.76" stop-color="#2a2e34"/>
+      <stop id="rLo"  offset="0.76" stop-color="#15171b"/>
+      <stop id="rLo2" offset="1"    stop-color="#15171b"/>
     </linearGradient>
     <!-- 黄色涂装：有漆面高光，不是平涂 -->
     <linearGradient id="gTrim" x1="0.1" y1="0" x2="0.65" y2="1">
-      <stop id="tHi" offset="0%"   stop-color="#ffe694"/>
-      <stop id="tMid" offset="46%"  stop-color="#f2c230"/>
-      <stop id="tLo" offset="100%" stop-color="#a87615"/>
+      <stop id="tHi"  offset="0"    stop-color="#ffe694"/>
+      <stop id="tHi2" offset="0.34" stop-color="#ffe694"/>
+      <stop id="tMid" offset="0.34" stop-color="#f2c230"/>
+      <stop id="tMid2" offset="0.80" stop-color="#f2c230"/>
+      <stop id="tLo"  offset="0.80" stop-color="#a87615"/>
+      <stop id="tLo2" offset="1"    stop-color="#a87615"/>
     </linearGradient>
     <!-- 披风的编织网纹 -->
     <pattern id="pMesh" width="5" height="5" patternUnits="userSpaceOnUse">
@@ -289,8 +312,8 @@ window.HELLDIVER_SVG = `
                L -7.8 -220.8 L -13.8 -225.2 Z"/>
     </clipPath>
     <clipPath id="capeClip">
-      <path d="M -26 -196 C -44 -156, -50 -100, -44 -56 C -28 -66, -12 -70, 0 -70
-               C 12 -70, 28 -66, 44 -56 C 50 -100, 44 -156, 26 -196 Z"/>
+      <path d="M -26 -196 C -41 -162, -45 -124, -41 -88 C -28 -96, -12 -99, 0 -99
+               C 12 -99, 28 -96, 41 -88 C 45 -124, 41 -162, 26 -196 Z"/>
     </clipPath>
   </defs>
 
@@ -302,8 +325,8 @@ window.HELLDIVER_SVG = `
 
     <!-- ================= 披风（织网质感，最靠里层） ================= -->
     <g id="cape" pointer-events="none">
-      <path class="pc" d="M -26 -196 C -44 -156, -50 -100, -44 -56 C -28 -66, -12 -70, 0 -70
-                           C 12 -70, 28 -66, 44 -56 C 50 -100, 44 -156, 26 -196 Z"/>
+      <path class="pc" d="M -26 -196 C -41 -162, -45 -124, -41 -88 C -28 -96, -12 -99, 0 -99
+                           C 12 -99, 28 -96, 41 -88 C 45 -124, 41 -162, 26 -196 Z"/>
       <g clip-path="url(#capeClip)">
         <rect x="-52" y="-200" width="104" height="150" fill="url(#pMesh)"/>
         <g class="cape-marks cm-plain"></g>
@@ -313,8 +336,8 @@ window.HELLDIVER_SVG = `
         <g class="cape-marks cm-skull">${CAPE_MARKS.skull}</g>
       </g>
       <!-- 左缘冷光边（主光在左上） -->
-      <path class="prim" d="M -26 -196 C -40 -162, -47 -116, -45 -74" fill="none" stroke-width="1.6" opacity="0.5"/>
-      <path class="pcline" d="M 26 -196 C 42 -164, 49 -150, 51 -136" fill="none" stroke-width="1.6"/>
+      <path class="prim" d="M -26 -196 C -39 -164, -43 -126, -40 -96" fill="none" stroke-width="1.5" opacity="0.3"/>
+      <path class="pcline" d="M 26 -196 C 40 -166, 44 -150, 45 -138" fill="none" stroke-width="1.6"/>
     </g>
 
     <!-- ================= 腿 =================
@@ -329,15 +352,18 @@ window.HELLDIVER_SVG = `
         <!-- 膝盖护片：亮面圆顶 -->
         <path class="pkneem" d="M -20 -72 Q -11 -78.5 -2 -72 L -2.5 -58 Q -11 -52 -21 -58 Z"/>
         <path class="prim" d="M -18.4 -71 Q -11 -75.4 -5 -71" fill="none" stroke-width="1.5" opacity="0.55"/>
+        <path class="phl3" d="M -17 -72.5 Q -11 -76.5 -4.5 -72.5"/>
         <!-- 膝盖黄弧（压在护片上沿） -->
         <path class="pt" d="M -21.6 -72.4 Q -11 -79.8 -0.4 -72.8 L -0.4 -68.6 Q -11 -75.2 -21.6 -68.2 Z"/>
         <!-- 胫甲 -->
         <path class="pmetal" d="M -20.5 -58 L -2.5 -58 L -3 -28 L -21 -28 Z"/>
         <path class="pmetaledge" d="M -2.5 -58 L -3 -28 L -6.6 -28 L -6 -58 Z" opacity="0.55"/>
+        <path class="phl2" d="M -19.2 -56 L -19.6 -30"/>
         <!-- 靴子 -->
         <path class="pboot" d="M -21 -28 L -3 -28 L -3.6 -8 L 5.4 -8 L 6 0 L -22 0 Z"/>
         <path class="psole" d="M -22 0 L 6 0 L 5.4 3.2 L -22.6 3.2 Z"/>
         <path class="prim" d="M -20.4 -26 L -3 -26" fill="none" stroke-width="1.3" opacity="0.4"/>
+        <path class="phl2" d="M -19.5 -26.5 L -5 -26.5"/>
       </g>
       <g id="leg-r">
         <path class="pcoat" d="M 2 -113 L 19 -113 L 20 -74 L 2.5 -74 Z"/>
@@ -345,11 +371,14 @@ window.HELLDIVER_SVG = `
         <rect class="pbb" x="10.5" y="-99" width="9" height="5.4" rx="1.3" transform="rotate(5 15 -96.3)"/>
         <path class="pkneem" d="M 2 -72 Q 11 -78.5 20 -72 L 21 -58 Q 11 -52 2.5 -58 Z"/>
         <path class="prim" d="M 5 -71 Q 11 -75.4 17 -71" fill="none" stroke-width="1.5" opacity="0.55"/>
+        <path class="phl2" d="M 4.5 -72.5 Q 11 -76 17.5 -72"/>
         <path class="pt" d="M 0.4 -72.8 Q 11 -79.8 21.6 -72.4 L 21.6 -68.2 Q 11 -75.2 0.4 -68.6 Z"/>
         <path class="pmetal" d="M 2.5 -58 L 20.5 -58 L 21 -28 L 3 -28 Z"/>
         <path class="pmetaledge" d="M 6 -58 L 6.6 -28 L 3 -28 L 2.5 -58 Z" opacity="0.55"/>
+        <path class="phl2" d="M 4.2 -56 L 4.6 -30"/>
         <path class="pboot" d="M 3 -28 L 21 -28 L 22 0 L 6 0 L 5.4 -8 L 3 -28 Z"/>
         <path class="psole" d="M 6 0 L 22.6 3.2 L 22 0 Z"/>
+        <path class="phl2" d="M 5 -26.5 L 19.5 -26.5"/>
       </g>
     </g>
 
@@ -360,6 +389,9 @@ window.HELLDIVER_SVG = `
         <!-- 外层风衣（躯干主体） -->
         <path class="pcoat" d="M -23 -203 Q -28 -184, -24.5 -158 L -22.5 -130 Q -23.5 -116, -24.5 -106
                               L 24.5 -106 Q 23.5 -116, 22.5 -130 L 24.5 -158 Q 28 -184, 23 -203 Z"/>
+        <!-- 硬边高光：风衣左侧的棱线 -->
+        <path class="phl2" d="M -21.8 -201 Q -25.5 -187, -23.8 -169"/>
+        <path class="phl2" d="M 21.8 -201 Q 25.5 -187, 23.8 -169" opacity="0.4"/>
         <path class="pcoat2" d="M 16 -160 Q 20 -130, 21 -106 L 24.5 -106 Q 23.5 -116, 22.5 -130 L 24.5 -158 Z" opacity="0.6"/>
         <path class="pao" d="M -3.4 -156 L 3.4 -156 L 4.6 -106 L -4.6 -106 Z" opacity="0.6"/>
         <!-- 前襟黄边：腰带扣往下，再左右分叉（官方图就是这样） -->
@@ -391,7 +423,10 @@ window.HELLDIVER_SVG = `
         <!-- 肩甲边缘高光 -->
         <path class="ptl" d="M -44 -194 Q -34 -203, -22 -201.5" stroke-width="1.7" stroke-linecap="round" opacity="0.65"/>
         <path class="ptl" d="M 44 -194 Q 34 -203, 22 -201.5" stroke-width="1.7" stroke-linecap="round" opacity="0.65"/>
-        ${skull(-39, -188, 0.44, 'pt')}
+        <!-- 硬边高光：肩甲左上的棱线 -->
+        <path class="phl" d="M -23 -202 Q -35 -205.5 -44 -196.5"/>
+        <path class="phl2" d="M 23 -202 Q 35 -205.5 44 -196.5"/>
+       ${skull(-39, -188, 0.44, 'pt')}
         ${skull(39, -188, 0.44, 'pt')}
 
         <!-- 腰带 -->
@@ -464,6 +499,9 @@ window.HELLDIVER_SVG = `
                               L 10.2 -239 Q 10.7 -250 0 -251.6 Q -10.7 -250 -10.2 -239 Z"/>
       <!-- 盔顶主光高光 -->
       <path class="pspec" d="M -12.8 -245 Q -10.8 -252.8 -2 -254.6 Q -8.2 -251.8 -10.8 -243.2 Z" opacity="0.4"/>
+      <!-- 硬边高光：亮面棱线（主光在左上） -->
+      <path class="phl" d="M -14.2 -241.5 Q -14.5 -251.5 -4.5 -254.6"/>
+      <path class="phl2" d="M -11.5 -237.5 Q -8 -240 -4 -240.5"/>
       <!-- 盔壳下缘的环境遮蔽 -->
       <path class="pao" d="M -13.8 -225 Q 0 -213.6 13.8 -225 Q 12.4 -214 6.8 -212.6 L -6.8 -212.6 Q -12.4 -214 -13.8 -225 Z" opacity="0.5"/>
 

@@ -130,6 +130,46 @@ ref/gallery.png     Helldivers_2_Armor_Gallery.png        全装甲图库 5964×
 每种材质都是 CSS 变量驱动的（`--coat` / `--metal` / `--rubber` / `--trim` …），
 10 款皮肤各给一套，换皮肤还是「换一个 class」。
 
+### 三渲二（硬表面渲染）
+
+在 Google 搜 `helldiver model for blender` 会发现社区里有一大票 Helldivers 3D 模型
+（[Sketchfab](https://sketchfab.com/tags/helldivers) 上有 rigged 的免费版，
+[Meshy](https://www.meshy.ai/)、[CGTrader](https://www.cgtrader.com/) 上有 140+ 个，
+[Nexus Mods](https://www.nexusmods.com/) 甚至有直接改游戏存档里贴图/网格/材质的
+Blender 插件，YouTube 上还有几支「怎么做 Helldivers 2 美术」的教程）。
+
+**那些模型没有直接用** —— 它们是从商业游戏里提取的著作权作品，而本项目从第一版
+就承诺「不含任何游戏原始素材」。但它们是极好的参考资料，看了之后发现一件很关键的事：
+
+> **Helldivers 2 本身就不是描边漫画风，而是硬表面（hard-surface）风格。**
+> 板件之间靠黑色缝隙分隔，棱线上是干脆的亮边高光，没有统一墨线。
+
+所以「全身描一圈墨线」放在这个角色身上是错的 —— 深色装甲上的深色墨线根本看不见。
+该做的是原作自己的语言：
+
+**1. 硬边色阶。** 每条材质渐变都拆成「两两同偏移」的色带：
+
+```xml
+<stop offset="0"    stop-color="…"/>   <!-- 亮 -->
+<stop offset="0.40" stop-color="…"/>   <!-- 亮：同一偏移 → 颜色直接跳变 -->
+<stop offset="0.40" stop-color="…"/>   <!-- 中 -->
+<stop offset="0.76" stop-color="…"/>   <!-- 中 -->
+<stop offset="0.76" stop-color="…"/>   <!-- 暗 -->
+<stop offset="1"    stop-color="…"/>   <!-- 暗 -->
+```
+
+每个材质现在是亮 / 中 / 暗三段硬边，光源方向（左上）一望即知。
+
+**2. 硬边高光。** 沿受光面的棱线单独画一条亮线（`.phl` / `.phl2` / `.phl3`）：
+盔顶左上弧、肩甲顶棱、风衣左缘、护膝圆顶、胫甲外棱、靴子上沿。
+护膝那圈亮弧最出彩 —— 原作护膝是**亮面圆顶**，一条硬高光就把体积感做出来了。
+
+**3. 墨线只用在刀刃上。** 只给「和浅色相邻」的部件描边（黄条、金属件、枪械），
+深色主体靠色块边界和硬高光分隔，不会糊成一坨黑。
+
+**4. 披风收窄。** 之前下摆摊到小腿、两侧张得很开，把下半身全盖住了。
+按官方正面图，披风只垂在身侧一条 —— 收窄到 ±41，下摆收到膝盖附近。
+
 ### 对着图改出来的几处
 
 前两版只给了 3/4 视角，光看它会把胸口和腰部看扁。正面图和 1024² 渲染图一上，
@@ -368,6 +408,26 @@ npm start -- --html <本地html路径>    # 加载任意页面再截图，做参
 - [Helldivers 2 Symbol](https://logos-world.net/wp-content/uploads/2024/11/Helldivers-2-Symbol.png)：
   Super Earth 骷髅徽记的官方符号图，胸徽 / 头盔侧 / 肩章 / 腰扣的骷髅按它重建
 - 各家道具厂的产品描述互相印证了「深黑壳 + 双黄条 + 封闭式面罩」这一组特征
+
+### 画风与结构参考
+
+下面这些是**只作参考、没有直接使用任何模型文件**：
+
+- [Sketchfab — Helldivers 3D models](https://sketchfab.com/tags/helldivers)：
+  社区做的 Helldivers 模型（含 rigged 版），用来确认原作的**硬表面造型语言** ——
+  板件之间是黑色缝隙、棱线是硬边高光、整体棱角分明。看白模和那把游戏武器
+  就知道「统一墨线漫画风」根本不是这个游戏的画法
+- YouTube：`How to Make Helldivers 2 Art in Blender (Beginner's Guide)`（Pickleaxe）、
+  `How To Create a Helldivers 2 Render`（Yisen Cinema）、
+  `Helldivers 2 Modding for Beginners`（Primortem）
+- [Nexus Mods — Helldivers 2 Modding Tool for Blender 4.0](https://www.nexusmods.com/)：
+  说明游戏内装甲的贴图 / 网格 / 材质是怎么分层的
+- [Reddit r/Helldivers — Anyone know how to access the 3D models?](https://www.reddit.com/r/Helldivers/)：
+  社区讨论怎么从游戏文件里提取模型（只作为「这个生态存在」的佐证）
+
+> **没有直接使用任何 3D 模型**：那些都是从商业游戏里提取或移植的著作权作品，
+> 打包分发是侵权；而且本项目从第一版就承诺「不含任何游戏原始素材」。
+> 形象全部是手写 SVG，参考图只存本地 `.ref/`，不随程序分发。
 
 ## 致谢与声明
 
