@@ -78,6 +78,49 @@
     </section>
 
     <section class="card">
+      <h2>拟人</h2>
+
+      <label class="check">
+        <input type="checkbox" id="gaze" />
+        <span>视线跟随（头会跟着鼠标转）</span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="physics" />
+        <span>抛掷物理（甩出去有惯性，松手会掉回地面）</span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="peek" />
+        <span>屏幕边缘探头（藏在屏幕边上，鼠标靠近才冒头）</span>
+      </label>
+
+      <label class="row">
+        <span class="k">士气</span>
+        <span class="v" id="v-mood">70</span>
+      </label>
+      <input type="range" id="mood" min="0" max="100" step="1" />
+
+      <p class="hint-text">
+        互动会涨士气，独处会掉。士气低了他会抱怨，高了会来劲。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>专注计时</h2>
+
+      <div class="seg" id="focusSeg">
+        <button data-min="0">关闭</button>
+        <button data-min="25">25 分钟</button>
+        <button data-min="50">50 分钟</button>
+      </div>
+
+      <p class="hint-text">
+        开始后潜兵会盯着你，到点拉警报提醒。结束时间会存下来，重启后接着算。
+      </p>
+    </section>
+
+    <section class="card">
       <h2>台词</h2>
 
       <label class="row"><span class="k">语言</span></label>

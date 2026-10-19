@@ -21,7 +21,8 @@ const DESIGN_H = 400;
 
 // 调试开关：排查窗口尺寸异常时打开，--trace 启动
 const DEBUG_TRACE = process.argv.includes('--trace');
-let moveTrace = DEBUG_TRACE ? 25 : 0;
+// 追踪额度要够大，不然会被巡逻的移动日志先吃光，看不到抛物飞行的轨迹
+let moveTrace = DEBUG_TRACE ? 600 : 0;
 
 // 可选皮肤，顺序即设置面板 / 菜单里的顺序；定义见 renderer/pet.css
 const SKINS = ['b01', 'b22', 'sc34', 'fs23', 'a35', 'tr117', 'ce74', 'cw22', 'cw4', 'cw9'];
@@ -188,7 +189,7 @@ function createPetWindow() {
           if (zoom > 0 || skin || weapon) {
             await win.webContents.executeJavaScript(
               `var st1=document.getElementById('stage');
-               if (${zoom} > 0) document.documentElement.style.setProperty('--scale', ${zoom});
+               if (${zoom} > 0 && window.petFx && window.petFx.zoom) { window.petFx.zoom(${zoom}); }
                ${
                  skin
                    ? `if(st1){st1.className=[...st1.classList].filter(function(c){return c.indexOf('skin-')!==0;}).join(' ');
@@ -217,8 +218,27 @@ function createPetWindow() {
               `if (window.petFx && window.petFx[${JSON.stringify(effect)}]) window.petFx[${JSON.stringify(effect)}]();true;`,
             );
             // 特效有过程，等它演到最精彩的一帧再截
-            const at = { eagle: 900, hmg: 1100, missile: 1000, promote: 600, stim: 600, stratagem: 700, orbital: 400 }[effect] || 800;
+            const at = { eagle: 900, hmg: 1100, missile: 1000, promote: 600, stim: 600, stratagem: 700, orbital: 400,
+                         gaze: 350, gazeRight: 350, mood: 250, moodLow: 250, moodMid: 250,
+                         focus: 1200, peek: 350, fling: 350 }[effect] || 800;
             await new Promise((r) => setTimeout(r, at));
+          }
+          // --html 加载的是任意页面（设置面板、参考图拼版等），
+          // 窗口按内容高度自动撑开，否则只能截到首屏。
+          if (htmlIdx !== -1) {
+            const m = await win.webContents.executeJavaScript(
+              'JSON.stringify({w: document.documentElement.scrollWidth, h: document.documentElement.scrollHeight})',
+            );
+            const dim = JSON.parse(m);
+            logger.info(`[shot] 页面内容尺寸 ${dim.w}x${dim.h}，窗口 ${win.getBounds().width}x${win.getBounds().height}`);
+            const b = win.getBounds();
+            win.setBounds({
+              x: b.x,
+              y: b.y,
+              width: Math.max(b.width, Math.min(1600, dim.w)),
+              height: Math.max(b.height, Math.min(3000, dim.h)),
+            });
+            await new Promise((r) => setTimeout(r, 500));
           }
           const img = await win.webContents.capturePage();
           fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -254,7 +274,7 @@ function createSettingsWindow() {
   }
   settingsWin = new BrowserWindow({
     width: 420,
-    height: 1180,
+    height: 1420,
     title: '绝地潜兵桌宠 · 设置',
     resizable: false,
     minimizable: false,
@@ -296,6 +316,60 @@ function buildTrayMenu() {
         settings.save({ autoWander: item.checked });
         broadcastSettings();
       },
+    },
+    {
+      label: '视线跟随',
+      type: 'checkbox',
+      checked: !!s.gaze,
+      click: (item) => {
+        settings.save({ gaze: item.checked });
+        broadcastSettings();
+      },
+    },
+    {
+      label: '抛掷物理',
+      type: 'checkbox',
+      checked: !!s.physics,
+      click: (item) => {
+        settings.save({ physics: item.checked });
+        broadcastSettings();
+      },
+    },
+    {
+      label: '屏幕边缘探头',
+      type: 'checkbox',
+      checked: !!s.peek,
+      click: (item) => {
+        settings.save({ peek: item.checked });
+        broadcastSettings();
+      },
+    },
+    {
+      label: '专注计时',
+      submenu: [
+        {
+          label: '25 分钟',
+          click: () => {
+            settings.save({ focusMinutes: 25, focusEndAt: Date.now() + 25 * 60000 });
+            broadcastSettings();
+          },
+        },
+        {
+          label: '50 分钟',
+          click: () => {
+            settings.save({ focusMinutes: 50, focusEndAt: Date.now() + 50 * 60000 });
+            broadcastSettings();
+          },
+        },
+        { type: 'separator' },
+        {
+          label: '停止',
+          click: () => {
+            settings.save({ focusMinutes: 0, focusEndAt: 0 });
+            broadcastSettings();
+          },
+        },
+      ],
     },
     {
       label: '始终置顶',
@@ -397,6 +471,14 @@ ipcMain.handle('settings:set', (_e, patch) => {
   if ('quotesLang' in p) next.quotesLang = p.quotesLang;
   if ('showBubble' in p) next.showBubble = !!p.showBubble;
   if ('autoLaunch' in p) setAutoLaunch(p.autoLaunch);
+  // 拟人化相关：视线跟随 / 物理 / 探头 / 士气 / 专注计时
+  // 注意：这个处理器是白名单式的，漏掉的字段会被静默丢弃（存不进 settings.json）
+  if ('gaze' in p) next.gaze = !!p.gaze;
+  if ('physics' in p) next.physics = !!p.physics;
+  if ('peek' in p) next.peek = !!p.peek;
+  if ('mood' in p) next.mood = clampInt(p.mood, 0, 100);
+  if ('focusMinutes' in p) next.focusMinutes = clampInt(p.focusMinutes, 0, 600);
+  if ('focusEndAt' in p) next.focusEndAt = Math.max(0, Math.round(Number(p.focusEndAt) || 0));
 
   settings.save(next);
   const out = settings.load();
@@ -456,6 +538,20 @@ ipcMain.handle('win:get-pos', () => {
 ipcMain.handle('screen:work-area', () => {
   const wa = screen.getPrimaryDisplay().workArea;
   return { x: wa.x, y: wa.y, width: wa.width, height: wa.height };
+});
+
+// 全局光标位置：视线跟随、屏幕边缘探头都要用
+ipcMain.handle('screen:cursor', () => {
+  const p = screen.getCursorScreenPoint();
+  return { x: p.x, y: p.y };
+});
+
+// 所有显示器的可用区域，探头模式要把桌宠贴到屏幕边缘
+ipcMain.handle('screen:displays', () => {
+  return screen.getAllDisplays().map((d) => {
+    const wa = d.workArea;
+    return { x: wa.x, y: wa.y, width: wa.width, height: wa.height, scale: d.scaleFactor || 1 };
+  });
 });
 
 ipcMain.on('win:open-settings', () => createSettingsWindow());

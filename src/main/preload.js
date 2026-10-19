@@ -15,6 +15,8 @@ contextBridge.exposeInMainWorld('petAPI', {
   moveTo: (x, y) => ipcRenderer.send('win:move-to', { x, y }),
   getWindowPos: () => ipcRenderer.invoke('win:get-pos'),
   getWorkArea: () => ipcRenderer.invoke('screen:work-area'),
+  getCursor: () => ipcRenderer.invoke('screen:cursor'),
+  getDisplays: () => ipcRenderer.invoke('screen:displays'),
   setIgnoreMouse: (ignore) => ipcRenderer.send('win:ignore-mouse', { ignore }),
   setAlwaysOnTop: (v) => ipcRenderer.send('win:topmost', { value: v }),
   setOpacity: (v) => ipcRenderer.send('win:opacity', { value: v }),

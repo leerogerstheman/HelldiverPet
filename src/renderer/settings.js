@@ -58,9 +58,14 @@
     showBubble: $('showBubble'),
     sound: $('sound'),
     autoLaunch: $('autoLaunch'),
+    gaze: $('gaze'),
+    physics: $('physics'),
+    peek: $('peek'),
+    mood: $('mood'),
     vScale: $('v-scale'),
     vOpacity: $('v-opacity'),
     vWander: $('v-wander'),
+    vMood: $('v-mood'),
   };
 
   let current = {};
@@ -75,10 +80,27 @@
     els.showBubble.checked = !!s.showBubble;
     els.sound.checked = !!s.sound;
     els.autoLaunch.checked = !!s.autoLaunch;
+    els.gaze.checked = s.gaze !== false;
+    els.physics.checked = s.physics !== false;
+    els.peek.checked = !!s.peek;
+    els.mood.value = s.mood == null ? 70 : s.mood;
     syncLabels();
     syncLang(s.quotesLang);
+    syncFocus(s);
     buildSkins(s.skin);
     buildWeapons(s.weapon);
+  }
+
+  /** 专注计时的分段按钮：按当前设置里的剩余时间反推选中项 */
+  function syncFocus(s) {
+    const min = s.focusMinutes || 0;
+    const remain = s.focusEndAt ? Math.round((s.focusEndAt - Date.now()) / 60000) : 0;
+    let sel = '0';
+    if (min === 25 || remain === 25) sel = '25';
+    else if (min === 50 || remain === 50) sel = '50';
+    document.querySelectorAll('#focusSeg button').forEach((b) => {
+      b.classList.toggle('on', b.dataset.min === sel);
+    });
   }
 
   /* ------------------------------------------------------------ 皮肤列表 */
@@ -132,6 +154,7 @@
     els.vScale.textContent = `${els.scale.value}%`;
     els.vOpacity.textContent = `${els.opacity.value}%`;
     els.vWander.textContent = els.wanderSpeed.value;
+    els.vMood.textContent = els.mood.value;
   }
 
   function syncLang(lang) {
@@ -185,6 +208,25 @@
   els.autoLaunch.addEventListener('change', () =>
     push({ autoLaunch: els.autoLaunch.checked }, true),
   );
+  els.gaze.addEventListener('change', () => push({ gaze: els.gaze.checked }, true));
+  els.physics.addEventListener('change', () => push({ physics: els.physics.checked }, true));
+  els.peek.addEventListener('change', () => push({ peek: els.peek.checked }, true));
+  els.mood.addEventListener('input', () => {
+    syncLabels();
+    push({ mood: Number(els.mood.value) });
+  });
+
+  document.querySelectorAll('#focusSeg button').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#focusSeg button').forEach((n) => n.classList.remove('on'));
+      b.classList.add('on');
+      const min = Number(b.dataset.min) || 0;
+      push(
+        { focusMinutes: min, focusEndAt: min > 0 ? Date.now() + min * 60000 : 0 },
+        true,
+      );
+    });
+  });
 
   document.querySelectorAll('#langSeg button').forEach((b) => {
     b.addEventListener('click', () => {

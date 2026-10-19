@@ -14,6 +14,10 @@
   const hintEl = document.getElementById('hint');
   const fx = document.getElementById('fx');
   const host = document.getElementById('diverHost');
+  const moodEl = document.getElementById('mood');
+  const focusEl = document.getElementById('focus');
+  const focusTimeEl = document.getElementById('focusTime');
+  const focusBarEl = document.getElementById('focusBar');
 
   /* --------------------------------------------------------------- 状态 */
 
@@ -28,6 +32,13 @@
     quotesLang: 'cn',
     showBubble: true,
     opacity: 1,
+    // 新增
+    gaze: true,
+    physics: true,
+    peek: false,
+    mood: 70,
+    focusMinutes: 0,
+    focusEndAt: 0,
   };
 
   let bubbleTimer = null;
@@ -67,13 +78,34 @@
   });
 
   function applySettings(next) {
+    const prev = Object.assign({}, cfg);
     cfg = Object.assign(cfg, next || {});
-    document.documentElement.style.setProperty('--scale', cfg.scale);
+    applyScale();
     applySkin(cfg.skin);
     applyWeapon(cfg.weapon);
     setEnabled(cfg.sound);
     startWander();
     if (!cfg.showBubble) hideBubble();
+    updateMoodUI();
+    applyPeek();
+    // 专注计时：重启后按存的结束时间接着跑
+    if (cfg.focusEndAt && cfg.focusEndAt > Date.now()) {
+      updateFocusUI();
+      if (!focusTimer) focusTimer = setInterval(focusTick, 1000);
+    } else if (cfg.focusEndAt && prev.focusEndAt !== cfg.focusEndAt) {
+      stopFocus();
+    }
+  }
+
+  /**
+   * 舞台缩放。
+   * zoomOverride 存在时优先用它 —— --shot 截图模式要按 zoom 放大，
+   * 但截图期间如果触发了任何设置写入（applySettings 会跑），
+   * 直接写 CSS 变量会被覆盖回配置里的 scale，截出来的大小就不对了。
+   */
+  let zoomOverride = null;
+  function applyScale() {
+    document.documentElement.style.setProperty('--scale', zoomOverride != null ? zoomOverride : cfg.scale);
   }
 
   /** 切换皮肤：换 class 即可，SVG 不需要重建 */
@@ -199,6 +231,7 @@
   function onPetClick(part) {
     const isHead = part === 'head';
     clickCount++;
+    addMood(isHead ? 6 : 4);
 
     if (clickCount % 12 === 0) {
       dizzy();
@@ -545,7 +578,18 @@
     try {
       e.target.setPointerCapture(e.pointerId);
     } catch (_) {}
-    drag = { x: e.screenX, y: e.screenY, moved: 0, t: Date.now(), id: e.pointerId, part: hitPart(e) };
+    drag = {
+      x: e.screenX,
+      y: e.screenY,
+      moved: 0,
+      t: Date.now(),
+      id: e.pointerId,
+      part: hitPart(e),
+      // 抛掷用的速度（px/s），指数平滑，单帧抖动不会让手感变得神经质
+      vx: 0,
+      vy: 0,
+      mt: Date.now(),
+    };
     bumpIdle();
   }
 
@@ -567,6 +611,13 @@
     drag.y = e.screenY;
     drag.moved += Math.abs(dx) + Math.abs(dy);
 
+    // 记录甩出去的速度
+    const now = Date.now();
+    const mdt = Math.max(1, now - drag.mt);
+    drag.vx = drag.vx * 0.65 + (dx / mdt) * 1000 * 0.35;
+    drag.vy = drag.vy * 0.65 + (dy / mdt) * 1000 * 0.35;
+    drag.mt = now;
+
     moveAccum.x += dx;
     moveAccum.y += dy;
     if (!moveRaf) moveRaf = requestAnimationFrame(flushMove);
@@ -582,6 +633,8 @@
     const wasDrag = drag.moved > 8;
     const dt = Date.now() - drag.t;
     const dragPart = drag.part;
+    const vx = drag.vx;
+    const vy = drag.vy;
     drag = null;
     setTimeout(() => { dragSaid = false; }, 6000);
     stage.classList.remove('is-drag');
@@ -589,9 +642,16 @@
     bumpIdle();
 
     if (wasDrag) {
-      sfx.land();
-      stage.classList.add('is-jump');
-      setTimeout(() => stage.classList.remove('is-jump'), 620);
+      if (cfg.physics) {
+        // 甩得够快就带着惯性飞出去，否则笔直掉回地面
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        if (speed > 420) startFlight(vx, vy, false);
+        else startFlight(0, 0, true);
+      } else {
+        sfx.land();
+        stage.classList.add('is-jump');
+        setTimeout(() => stage.classList.remove('is-jump'), 620);
+      }
       return;
     }
     if (dt < 700) scheduleClick(dragPart);
@@ -664,6 +724,19 @@
       { label: '自动巡逻', type: 'checkbox', checked: !!cfg.autoWander, action: 'toggle-wander' },
       { label: '显示台词气泡', type: 'checkbox', checked: !!cfg.showBubble, action: 'toggle-bubble' },
       { label: '音效', type: 'checkbox', checked: !!cfg.sound, action: 'toggle-sound' },
+      { label: '视线跟随', type: 'checkbox', checked: !!cfg.gaze, action: 'toggle-gaze' },
+      { label: '抛掷物理', type: 'checkbox', checked: !!cfg.physics, action: 'toggle-physics' },
+      { label: '屏幕边缘探头', type: 'checkbox', checked: !!cfg.peek, action: 'toggle-peek' },
+      { separator: true },
+      {
+        label: '专注计时',
+        submenu: [
+          { label: '25 分钟', action: 'focus25' },
+          { label: '50 分钟', action: 'focus50' },
+          { separator: true },
+          { label: '停止', enabled: !!(cfg.focusEndAt > Date.now()), action: 'focus-stop' },
+        ],
+      },
       { separator: true },
       { label: '放大', action: 'bigger' },
       { label: '缩小', action: 'smaller' },
@@ -775,6 +848,31 @@
       case 'toggle-sound':
         api.setSettings({ sound: !cfg.sound });
         break;
+      case 'toggle-gaze':
+        api.setSettings({ gaze: !cfg.gaze });
+        showHint(cfg.gaze ? '视线跟随：开' : '视线跟随：关', 1400);
+        if (!cfg.gaze) resetGaze();
+        break;
+      case 'toggle-physics':
+        api.setSettings({ physics: !cfg.physics });
+        showHint(cfg.physics ? '抛掷物理：开' : '抛掷物理：关', 1400);
+        break;
+      case 'toggle-peek':
+        api.setSettings({ peek: !cfg.peek });
+        showHint(cfg.peek ? '屏幕边缘探头：开' : '屏幕边缘探头：关', 1600);
+        break;
+      case 'focus25':
+        startFocus(25);
+        showHint('专注计时 25 分钟', 1800);
+        break;
+      case 'focus50':
+        startFocus(50);
+        showHint('专注计时 50 分钟', 1800);
+        break;
+      case 'focus-stop':
+        stopFocus();
+        showHint('专注计时已停止', 1600);
+        break;
       case 'bigger':
       case 'smaller': {
         const d = type === 'bigger' ? 0.15 : -0.15;
@@ -825,7 +923,8 @@
 
   function startWander() {
     clearInterval(wander.timer);
-    wander.enabled = !!cfg.autoWander;
+    // 探头模式下桌宠要贴着屏幕边缘待着，不能乱走
+    wander.enabled = !!cfg.autoWander && !cfg.peek;
     if (!wander.enabled) {
       stage.classList.remove('is-walk', 'facing-left');
       return;
@@ -841,6 +940,7 @@
     // wanderTick 是 async 的，IPC 往返期间下一次 setInterval 可能已经触发；
     // 不加锁会堆积成倍的实际移动速度。
     if (ticking || !wander.enabled || drag) return;
+    if (phys.active) return;
     if (stage.classList.contains('is-rest')) return;
     if (Date.now() < wander.pauseUntil) return;
 
@@ -892,6 +992,356 @@
     }, 80);
   }
 
+  /* ==================================================================
+     视线跟随
+     ------------------------------------------------------------------
+     潜兵是正面视角、镜面面罩看不见眼睛，所以「看着你」靠两件事表达：
+       1. 头朝光标方向转一点点
+       2. 面罩上的镜面高光跟着挪 —— 镜面反射本来就该随视角移动
+     ================================================================== */
+
+  let gazeTimer = null;
+  let gazeBusy = false;
+  let gazeSaidAt = 0;
+
+  function clampNum(v, lo, hi) {
+    return v < lo ? lo : v > hi ? hi : v;
+  }
+
+  function resetGaze() {
+    stage.style.setProperty('--gaze-rot', '0deg');
+    stage.style.setProperty('--gaze-x', '0px');
+    stage.style.setProperty('--gaze-y', '0px');
+    stage.style.setProperty('--gloss-x', '0px');
+    stage.style.setProperty('--gloss-y', '0px');
+  }
+
+  async function gazeTick() {
+    if (!cfg.gaze || drag || phys.active) {
+      resetGaze();
+      return;
+    }
+    if (gazeBusy) return; // 上一轮还没回来，别叠请求
+    gazeBusy = true;
+    try {
+      const cur = await api.getCursor();
+      const pos = await api.getWindowPos();
+      if (!cur || !pos) return;
+
+      const s = cfg.scale || 1;
+      // 头在 viewBox 里的位置是 (150, 164)（本体原点 150,384，头上移 220）。
+      // 舞台以底部中心为基准缩放，换算到窗口像素再换算到屏幕坐标。
+      const headX = pos.x + 150 * s;
+      const headY = pos.y + 164 * s;
+      const dx = cur.x - headX;
+      const dy = cur.y - headY;
+
+      stage.style.setProperty('--gaze-rot', clampNum(dx * 0.016, -9, 9).toFixed(2) + 'deg');
+      stage.style.setProperty('--gaze-x', clampNum(dx * 0.005, -3, 3).toFixed(2) + 'px');
+      stage.style.setProperty('--gaze-y', clampNum(dy * 0.004, -2.5, 2.5).toFixed(2) + 'px');
+      stage.style.setProperty('--gloss-x', clampNum(dx * 0.055, -12, 12).toFixed(2) + 'px');
+      stage.style.setProperty('--gloss-y', clampNum(dy * 0.03, -6, 6).toFixed(2) + 'px');
+
+      // 偶尔念叨一句，别刷屏
+      if (dx < -150 && Math.abs(dy) < 100 && Date.now() - gazeSaidAt > 100000) {
+        gazeSaidAt = Date.now();
+        say(QUOTES.gaze);
+      }
+    } catch (_) {
+      /* 单帧失败忽略 */
+    } finally {
+      gazeBusy = false;
+    }
+  }
+
+  function startGaze() {
+    clearInterval(gazeTimer);
+    gazeTimer = setInterval(gazeTick, 90);
+  }
+
+  /* ==================================================================
+     物理：抛掷 / 重力下落
+     ------------------------------------------------------------------
+     松手时甩得够快就带着惯性飞出去，否则笔直掉回地面。
+     撞到屏幕边缘会弹一下，落地压扁再弹起。
+     ================================================================== */
+
+  const GRAVITY = 2600; // px/s²
+  const phys = {
+    active: false,
+    vx: 0,
+    vy: 0,
+    raf: null,
+    last: 0,
+    px: 0,
+    py: 0,
+    pw: 300,
+    groundY: 0,
+    wa: null,
+    bounces: 0,
+  };
+
+  async function startFlight(vx, vy, quiet) {
+    const wa = await ensureWorkArea();
+    const pos = await api.getWindowPos();
+    if (!wa || !pos) return;
+    const s = cfg.scale || 1;
+    phys.active = true;
+    phys.vx = vx;
+    phys.vy = vy;
+    phys.px = pos.x;
+    phys.py = pos.y;
+    phys.pw = pos.width;
+    // 脚底落点：工作区底部就是地面（默认位置也是这么算的）
+    phys.groundY = wa.y + wa.height - 384 * s;
+    phys.wa = wa;
+    phys.bounces = 0;
+    phys.last = performance.now();
+    stage.classList.add('is-fling');
+    wander.pauseUntil = Date.now() + 6000;
+    if (!quiet) {
+      say(QUOTES.thrown);
+      sfx.grab();
+    }
+    if (!phys.raf) phys.raf = requestAnimationFrame(physTick);
+  }
+
+  function physTick() {
+    phys.raf = null;
+    if (!phys.active) return;
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - phys.last) / 1000);
+    phys.last = now;
+
+    phys.vy += GRAVITY * dt;
+
+    let dx = phys.vx * dt;
+    let dy = phys.vy * dt;
+
+    // 水平：撞屏幕边缘反弹
+    const wa = phys.wa;
+    const margin = 6;
+    const minX = wa.x + margin;
+    const maxX = wa.x + wa.width - phys.pw - margin;
+    let nx = phys.px + dx;
+    if (nx <= minX) {
+      nx = minX;
+      phys.vx = Math.abs(phys.vx) * 0.5;
+    } else if (nx >= maxX) {
+      nx = maxX;
+      phys.vx = -Math.abs(phys.vx) * 0.5;
+    }
+    dx = nx - phys.px;
+
+    // 垂直：落地反弹
+    let ny = phys.py + dy;
+    if (ny >= phys.groundY) {
+      ny = phys.groundY;
+      phys.vy = -Math.abs(phys.vy) * 0.38;
+      phys.vx *= 0.7;
+      phys.bounces++;
+      if (Math.abs(phys.vy) < 160 || phys.bounces > 6) {
+        phys.vy = 0;
+        phys.vx = 0;
+        phys.active = false;
+        stage.classList.remove('is-fling');
+        stage.style.setProperty('--spin', '0deg');
+        landNow(true);
+        return;
+      }
+      sfx.land();
+      stage.classList.add('is-land');
+      setTimeout(() => stage.classList.remove('is-land'), 340);
+    }
+    dy = ny - phys.py;
+
+    if (dx || dy) {
+      api.moveWindow(dx, dy);
+      phys.px = nx;
+      phys.py = ny;
+    }
+    stage.style.setProperty('--spin', clampNum(phys.vx * 0.014, -20, 20).toFixed(2) + 'deg');
+    phys.raf = requestAnimationFrame(physTick);
+  }
+
+  function landNow(quiet) {
+    stage.classList.add('is-land');
+    setTimeout(() => stage.classList.remove('is-land'), 340);
+    sfx.land();
+    if (!quiet) say(QUOTES.land);
+    addMood(3);
+  }
+
+  /* ==================================================================
+     士气
+     ------------------------------------------------------------------
+     互动会涨，独处会掉。低了会抱怨，高了会来劲。
+     ================================================================== */
+
+  let moodSaveTimer = null;
+  let moodGrumbleAt = 0;
+
+  function moodTier(v) {
+    return v >= 66 ? 3 : v >= 33 ? 2 : 1;
+  }
+
+  function updateMoodUI() {
+    if (!moodEl) return;
+    const v = Math.max(0, Math.min(100, Number(cfg.mood) || 0));
+    moodEl.className = 'mood t' + moodTier(v);
+    stage.classList.toggle('is-low', moodTier(v) === 1);
+  }
+
+  function addMood(delta) {
+    const before = Number(cfg.mood) || 0;
+    const after = Math.max(0, Math.min(100, before + delta));
+    if (after === before) return;
+    cfg.mood = after;
+    updateMoodUI();
+    // 持久化做防抖，免得每点一下都写一次磁盘
+    clearTimeout(moodSaveTimer);
+    moodSaveTimer = setTimeout(() => api.setSettings({ mood: cfg.mood }), 1500);
+  }
+
+  function moodDecayTick() {
+    addMood(-1);
+    const v = Number(cfg.mood) || 0;
+    const now = Date.now();
+    if (v < 30 && now - moodGrumbleAt > 120000) {
+      moodGrumbleAt = now;
+      say(QUOTES.grumpy);
+    } else if (v > 88 && now - moodGrumbleAt > 150000) {
+      moodGrumbleAt = now;
+      say(QUOTES.happy);
+    }
+  }
+
+  /* ==================================================================
+     屏幕边缘探头
+     ------------------------------------------------------------------
+     窗口贴在屏幕右边缘，桌宠再从窗口里往右挪，只在屏幕边缘露出一点点；
+     鼠标靠近才挪回来。窗口要跟着一起贴边，否则窗口会把它裁掉。
+     ================================================================== */
+
+  let peekTimer = null;
+  let peekOut = false;
+
+  async function applyPeek() {
+    const on = !!cfg.peek;
+    stage.classList.toggle('is-peek', on);
+    if (!on) {
+      stage.classList.remove('is-peek-out');
+      peekOut = false;
+      clearInterval(peekTimer);
+      peekTimer = null;
+      return;
+    }
+    await parkAtEdge();
+    if (!peekTimer) peekTimer = setInterval(peekTick, 280);
+  }
+
+  async function parkAtEdge() {
+    const wa = await ensureWorkArea();
+    const pos = await api.getWindowPos();
+    if (!wa || !pos) return;
+    const targetX = wa.x + wa.width - pos.width;
+    const targetY = wa.y + wa.height - Math.round(384 * (cfg.scale || 1));
+    if (Math.abs(pos.x - targetX) > 2 || Math.abs(pos.y - targetY) > 2) {
+      api.moveTo(targetX, targetY);
+    }
+  }
+
+  async function peekTick() {
+    if (!cfg.peek) return;
+    const wa = await ensureWorkArea();
+    let cur = null;
+    let pos = null;
+    try {
+      cur = await api.getCursor();
+      pos = await api.getWindowPos();
+    } catch (_) {
+      return;
+    }
+    if (!wa || !cur) return;
+
+    // 被拖走或被扔飞了就自动归位到屏幕边缘
+    if (pos) {
+      const edgeX = wa.x + wa.width - pos.width;
+      if (Math.abs(pos.x - edgeX) > 6) {
+        await parkAtEdge();
+      }
+    }
+
+    const near = cur.x > wa.x + wa.width - 340;
+    if (near === peekOut) return;
+    peekOut = near;
+    stage.classList.toggle('is-peek-out', near);
+    if (near) {
+      say(QUOTES.peek);
+      addMood(2);
+    }
+  }
+
+  /* ==================================================================
+     专注计时
+     ------------------------------------------------------------------
+     潜兵监督你干活，到点拉警报。结束时间存在 settings 里，重启后继续。
+     ================================================================== */
+
+  let focusTimer = null;
+
+  function startFocus(minutes) {
+    if (!minutes || minutes <= 0) return;
+    cfg.focusMinutes = minutes;
+    cfg.focusEndAt = Date.now() + minutes * 60000;
+    api.setSettings({ focusMinutes: minutes, focusEndAt: cfg.focusEndAt });
+    say(QUOTES.focus, { ms: 4200 });
+    sfx.reinforce();
+    updateFocusUI();
+    clearInterval(focusTimer);
+    focusTimer = setInterval(focusTick, 1000);
+  }
+
+  function stopFocus() {
+    clearInterval(focusTimer);
+    focusTimer = null;
+    cfg.focusMinutes = 0;
+    cfg.focusEndAt = 0;
+    api.setSettings({ focusMinutes: 0, focusEndAt: 0 });
+    updateFocusUI();
+  }
+
+  function focusTick() {
+    const left = (cfg.focusEndAt || 0) - Date.now();
+    if (left <= 0) {
+      stopFocus();
+      say(QUOTES.focusDone, { ms: 7000, emph: true });
+      sfx.promote();
+      addMood(8);
+      return;
+    }
+    updateFocusUI(left);
+  }
+
+  function updateFocusUI(leftMs) {
+    if (!focusEl) return;
+    const endAt = cfg.focusEndAt || 0;
+    const total = (cfg.focusMinutes || 0) * 60000;
+    if (!endAt || !total) {
+      focusEl.classList.remove('on', 'urgent');
+      return;
+    }
+    const left = leftMs != null ? leftMs : endAt - Date.now();
+    const secs = Math.max(0, Math.ceil(left / 1000));
+    const mm = String(Math.floor(secs / 60)).padStart(2, '0');
+    const ss = String(secs % 60).padStart(2, '0');
+    focusTimeEl.textContent = mm + ':' + ss;
+    const pct = Math.max(0, Math.min(100, (left / total) * 100));
+    focusBarEl.style.width = pct.toFixed(1) + '%';
+    focusEl.classList.add('on');
+    focusEl.classList.toggle('urgent', left < 10000);
+  }
+
   /* ------------------------------------------------------------- 事件绑定 */
 
   host.addEventListener('pointerdown', onPointerDown);
@@ -930,10 +1380,56 @@
     orbital: orbitalStrike,
     skin: applySkin,
     weapon: applyWeapon,
+    // 新增能力
+    gaze: (rot, gx, gy, glossX, glossY) => {
+      stage.style.setProperty('--gaze-rot', (rot == null ? -7 : rot) + 'deg');
+      stage.style.setProperty('--gaze-x', (gx == null ? -2.5 : gx) + 'px');
+      stage.style.setProperty('--gaze-y', (gy == null ? 1.5 : gy) + 'px');
+      stage.style.setProperty('--gloss-x', (glossX == null ? -9 : glossX) + 'px');
+      stage.style.setProperty('--gloss-y', (glossY == null ? 3 : glossY) + 'px');
+    },
+    gazeRight: () => {
+      stage.style.setProperty('--gaze-rot', '7deg');
+      stage.style.setProperty('--gaze-x', '2.5px');
+      stage.style.setProperty('--gaze-y', '-1.5px');
+      stage.style.setProperty('--gloss-x', '9px');
+      stage.style.setProperty('--gloss-y', '-3px');
+    },
+    mood: (v) => {
+      cfg.mood = v == null ? 70 : v;
+      updateMoodUI();
+    },
+    moodLow: () => {
+      cfg.mood = 18;
+      updateMoodUI();
+    },
+    moodMid: () => {
+      cfg.mood = 50;
+      updateMoodUI();
+    },
+    focus: (minutes) => startFocus(minutes || 25),
+    peek: (on) => {
+      cfg.peek = !!on;
+      stage.classList.toggle('is-peek', !!on);
+      stage.classList.toggle('is-peek-out', !!on);
+    },
+    fling: () => {
+      stage.classList.add('is-fling');
+      stage.style.setProperty('--spin', '-14deg');
+    },
+    // 真·抛出去（走完整的物理循环），用于实跑验证
+    launch: (vx, vy) => startFlight(vx == null ? 900 : vx, vy == null ? -400 : vy, true),
+    zoom: (z) => {
+      zoomOverride = z || null;
+      applyScale();
+    },
   };
 
   ensureWorkArea();
   bumpIdle();
+  startGaze();
+  // 士气随时间下滑，互动会涨回来
+  setInterval(moodDecayTick, 30000);
 
   // 首次使用打声招呼
   setTimeout(() => {

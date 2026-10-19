@@ -14,6 +14,13 @@ const DEFAULTS = {
   autoWander: true, // 随机在屏幕底部巡逻
   wanderSpeed: 18, // 像素 / 秒
   sound: true, // 合成音效
+  // 新增：视线跟随 / 物理 / 士气 / 探头 / 专注计时
+  gaze: true, // 头跟着鼠标转
+  physics: true, // 抛掷有惯性，松手会掉回地面
+  peek: false, // 屏幕边缘探头模式
+  mood: 70, // 士气 0~100
+  focusMinutes: 0, // 专注计时：分钟数，0 = 关闭
+  focusEndAt: 0, // 专注计时结束时间戳（毫秒）
   // 台词
   quotes: true,
   quotesLang: 'cn', // cn | en | both

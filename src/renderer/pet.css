@@ -885,3 +885,157 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   74%  { opacity: 1; transform: scale(1.02); }
   100% { opacity: 0; transform: scale(1.12); }
 }
+
+/* ==========================================================================
+   视线跟随
+   --------------------------------------------------------------------------
+   潜兵是正面视角，镜面面罩看不见眼睛，所以「看着你」靠两件事表达：
+     1. 头（.part-head）朝光标方向转一点点 —— 轴心在脖子
+     2. 面罩上的镜面高光（.pgloss）跟着挪 —— 镜面反射会随视角移动
+   transform-box 必须显式写 view-box，轴心用**局部坐标**（脚底为 0,0），
+   和上面摆腿的写法保持一致。 */
+#diver #head {
+  transform-box: view-box;
+  transform-origin: 0px -190px;   /* 脖子 */
+  transform: translate(var(--gaze-x, 0px), var(--gaze-y, 0px))
+             rotate(var(--gaze-rot, 0deg));
+  transition: transform 0.16s ease-out;
+}
+#diver .pgloss {
+  transform-box: view-box;
+  transform: translate(var(--gloss-x, 0px), var(--gloss-y, 0px));
+  transition: transform 0.16s ease-out;
+}
+/* 拖拽/行走时不要转头，专注看人 */
+#stage.is-drag #diver #head { transform: none; }
+
+/* ==========================================================================
+   物理：抛掷 / 下落
+   --------------------------------------------------------------------------
+   被扔出去时整体带旋转，落地弹一下。旋转加在 .diver-host 这一层，
+   避免和 #diver 自己的走路动画抢 transform 属性。 */
+.diver-host {
+  transform: translateX(var(--peek-x, 0px)) rotate(var(--spin, 0deg));
+  transform-origin: 50% 92%;
+}
+#stage.is-fling #diver {
+  animation: none;
+  transform: none;
+}
+#stage.is-fling #leg-l { transform: rotate(24deg); }
+#stage.is-fling #leg-r { transform: rotate(-20deg); }
+#stage.is-fling #cape { animation: capeFly 0.3s ease-in-out infinite; }
+#stage.is-fling #shadow { opacity: 0; }
+
+/* 落地那一瞬间的压扁弹跳 */
+#stage.is-land #diver { animation: landSquash 0.34s ease-out; }
+@keyframes landSquash {
+  0%   { transform: translateY(0) scale(1, 1); }
+  35%  { transform: translateY(4px) scale(1.1, 0.88); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+/* ==========================================================================
+   屏幕边缘探头
+   --------------------------------------------------------------------------
+   窗口整体贴在屏幕右边缘，桌宠再从窗口里往右挪，只在屏幕边缘露出一点点。
+   鼠标靠近时才挪回来。 */
+#stage.is-peek .diver-host { --peek-x: 190px; }
+#stage.is-peek-out .diver-host { --peek-x: 0px; }
+#stage.is-peek #bubble,
+#stage.is-peek #hint { opacity: 0; }
+
+/* ==========================================================================
+   士气指示器
+   --------------------------------------------------------------------------
+   三格，越满越精神。低士气时红色脉动。 */
+.mood {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 5px 3px 4px;
+  border-radius: 9px;
+  background: rgba(16, 21, 32, 0.62);
+  border: 1px solid rgba(140, 155, 180, 0.28);
+  transition: opacity 0.25s ease;
+}
+.mood-tag {
+  margin-left: 3px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: rgba(210, 220, 238, 0.68);
+}
+.mood-seg {
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  background: rgba(150, 160, 180, 0.22);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+/* 高士气：三格全亮，绿 */
+.mood.t3 .mood-seg { background: #62d48a; box-shadow: 0 0 5px rgba(98, 212, 138, 0.55); }
+/* 中士气：两格，琥珀 */
+.mood.t2 .mood-seg.s1,
+.mood.t2 .mood-seg.s2 { background: #efb43f; box-shadow: 0 0 5px rgba(239, 180, 63, 0.45); }
+/* 低士气：一格，红 */
+.mood.t1 .mood-seg.s1 { background: #e05a4e; box-shadow: 0 0 5px rgba(224, 90, 78, 0.5); }
+.mood.t1 { animation: moodLow 1.5s ease-in-out infinite; }
+@keyframes moodLow {
+  0%, 100% { border-color: rgba(224, 90, 78, 0.28); }
+  50%      { border-color: rgba(224, 90, 78, 0.85); }
+}
+/* 士气低时整体也蔫一点 */
+#stage.is-low #diver { filter: saturate(0.82); }
+
+/* ==========================================================================
+   专注倒计时
+   --------------------------------------------------------------------------
+   潜兵监督你干活，到点会拉警报。 */
+.focus {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 4px;
+  border-radius: 10px;
+  background: rgba(16, 21, 32, 0.72);
+  border: 1px solid rgba(242, 166, 59, 0.45);
+  font-size: 11px;
+  color: #f2a63b;
+}
+.focus.on { display: flex; }
+.focus-tag { font-size: 9px; letter-spacing: 1px; opacity: 0.85; }
+.focus-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.focus-bar {
+  display: block;
+  width: 42px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(242, 166, 59, 0.2);
+  overflow: hidden;
+}
+.focus-bar b {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  background: #f2a63b;
+  transition: width 0.9s linear;
+}
+/* 最后 10 秒变红闪 */
+.focus.urgent { border-color: rgba(224, 90, 78, 0.9); color: #ff8a7a; }
+.focus.urgent .focus-bar b { background: #e05a4e; }
+.focus.urgent .focus-time { animation: focusBlink 0.9s steps(2, end) infinite; }
+@keyframes focusBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}

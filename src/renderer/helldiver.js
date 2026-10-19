@@ -259,6 +259,12 @@ window.HELLDIVER_SVG = `
       <path d="M -32 -180 C -56 -144, -62 -80, -52 -24 C -34 -38, -15 -44, 0 -44
                C 15 -44, 34 -38, 52 -24 C 62 -80, 56 -144, 32 -180 Z"/>
     </clipPath>
+    <!-- 面罩裁剪：视线跟随时高光要在面罩内部滑动，不能溢出到盔壳上。
+         id 是全局的，注意别和别的 clipPath 撞名。 -->
+    <clipPath id="visorClip">
+      <path d="M -34 -231 Q 0 -236, 34 -231 L 33 -210 L 25 -204 L 17 -210
+               L 0 -207 L -17 -210 L -25 -204 L -33 -210 Z"/>
+    </clipPath>
   </defs>
 
   <g transform="translate(150 384)">
@@ -395,7 +401,7 @@ window.HELLDIVER_SVG = `
     </g>
 
     <!-- ================= 头盔 ================= -->
-    <g class="part-head">
+    <g id="head" class="part-head">
       <!-- 颈圈 -->
       <path class="pcollar" d="M -22 -192 L 22 -192 L 20 -182 L -20 -182 Z"/>
 
@@ -417,7 +423,10 @@ window.HELLDIVER_SVG = `
       <!-- 镜面银色面罩：底边是带 V 形缺口的锐角折线 -->
       <path class="pv" d="M -34 -231 Q 0 -236, 34 -231 L 33 -210 L 25 -204 L 17 -210
                           L 0 -207 L -17 -210 L -25 -204 L -33 -210 Z"/>
-      <path class="pgloss" d="M -25 -229 Q -14 -232, -6 -231 L -15 -208 L -26 -209 Z" opacity="0.5"/>
+      <!-- 镜面高光：视线跟随时跟着头的转动在面罩内滑动（镜面反光） -->
+      <g clip-path="url(#visorClip)">
+        <path class="pgloss" d="M -25 -229 Q -14 -232, -6 -231 L -15 -208 L -26 -209 Z" opacity="0.5"/>
+      </g>
 
       <!-- 防毒面具版面罩（CE-74 Breaker 用：圆护目镜 + 滤罐） -->
       <g class="alt-face" pointer-events="none">

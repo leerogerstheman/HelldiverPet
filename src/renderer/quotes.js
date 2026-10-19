@@ -137,6 +137,72 @@
       'More power, more responsibility.',
       'I will not let democracy down!',
     ],
+    // 新增：被抛掷 / 落地
+    thrown: [
+      '哇啊啊啊——！',
+      '我这是要飞了？！',
+      '这就是自由的感觉？',
+      '投得好！再扔一次！',
+      'Wheee—!',
+      'Did you just throw me?',
+      'This is the freest I have ever been.',
+    ],
+    land: [
+      '着地！姿势很帅吧？',
+      '哎哟……',
+      '完美着陆，民主万岁。',
+      '下次轻点。',
+      'Nailed it.',
+      'Oof. Still democratic.',
+      'Landing is falling with extra steps.',
+    ],
+    // 新增：士气低 / 士气高
+    grumpy: [
+      '没人理我……',
+      '我已经站很久了。',
+      '能不能摸摸我？',
+      '无聊……我快生锈了。',
+      'Democracy is great, but I am lonely.',
+      'Is anyone there?',
+      'Standing by... for someone.',
+    ],
+    happy: [
+      '状态绝佳！随时可以出发！',
+      '今天心情好，能多扔几发吗？',
+      '我 爱 这 个 星 球！',
+      'Peak performance. Deploy me.',
+      'Let us do this all day.',
+    ],
+    // 新增：探头 / 视线 / 专注
+    peek: [
+      '嘿，我在这儿呢。',
+      '偷看中……',
+      '别往那边看，我在这儿。',
+      'Peeking. Professional surveillance.',
+      'I am watching. Always.',
+    ],
+    gaze: [
+      '……你一直看着我？',
+      '别盯着我看，我会害羞的。',
+      '在盯着你呢，长官。',
+      'I see you staring.',
+      'Eyes on the prize, soldier.',
+    ],
+    focus: [
+      '计时开始，别想偷懒。',
+      '专注模式启动，我会盯着你的。',
+      '这段时间，你属于民主。',
+      'Focus timer engaged. I will be watching.',
+      'Do not squander the hours.',
+    ],
+    focusDone: [
+      '时间到！干得漂亮。',
+      '专注结束，休息一下。',
+      '你撑住了，兄弟。',
+      'Time is up. Nicely done.',
+      'That is how democracy gets done.',
+      'Break time. Hydrate.',
+    ],
   };
 
   /** 战略配备：真实投送码 + 名称 */
