@@ -55,7 +55,11 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --arm-h: #4d5563;
   --trim: #f2c230;
   --trim-2: #ffe08a;
-  --visor: #05070a;
+  --trim-hi: #ffe694;
+  --trim-lo: #a87615;
+  --visor: #1b2027;
+  --visor-hi: #b9c4d0;
+  --visor-lo: #0c1015;
   --visor-glow: #7fd8ff;
   --cape-a: #1c2440;
   --cape-mark: #ffffff;
@@ -64,6 +68,17 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --txt: #11161f;
   --bulk: 1;
   --helmet-lift: 0;
+  /* 材质：织物 / 金属 / 橡胶 —— 分开才能画出「不同材料不同反光」 */
+  --coat: #2f343b;
+  --coat-hi: #4a5058;
+  --coat-lo: #191c21;
+  --metal: #6b737d;
+  --metal-hi: #98a1ab;
+  --metal-lo: #3d434b;
+  --rubber: #2a2e34;
+  --rubber-hi: #474d55;
+  --rubber-lo: #15171b;
+  --emblem: #d6d9de;
 }
 
 /* --- 部件上色 --- */
@@ -75,8 +90,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 .ph  { fill: var(--arm-c); }
 .phs { stroke: var(--arm-h); fill: none; }
 .pm  { fill: var(--cape-mark); }
-.pt  { fill: var(--trim); stroke: none; }
+.pt  { fill: url(#gTrim); stroke: none; }
 .pstripe { fill: var(--trim); }
+.pstripe2 { fill: url(#gTrim); }
 .ptxt { fill: var(--txt); font-weight: 800; }
 
 /* 黄色只当细描边 / 环带用，不是大色块 —— 这是原版的关键特征 */
@@ -85,9 +101,37 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 .pkn   { fill: var(--trim); }
 .plg   { fill: var(--trim); opacity: 0.28; }
 .psole { fill: #0f1216; }
+.pcline { stroke: rgba(200, 214, 232, 0.16); fill: none; }
 .peagle{ fill: var(--emblem); }
 
 .pcape-shade { fill: #000; opacity: 0.30; }
+
+/* --- 材质层：织物 / 金属 / 橡胶 --- */
+.pcoat  { fill: url(#gCoat); }
+.pcoat2 { fill: var(--coat-lo); }
+/* 描边用的躯干（手臂、脖子这类是「画出来的一笔」，必须给 stroke 颜色，
+   只写 fill 的话会覆盖掉 SVG 的 fill="none"，开放路径又没填充面积，
+   结果整条手臂是隐形的 —— 这个坑踩过一轮才定位到） */
+.pstroke  { stroke: var(--coat); fill: none; }
+.pstrokeh { stroke: var(--coat-hi); fill: none; opacity: 0.32; }
+.pstroked { stroke: #05070a; fill: none; opacity: 0.55; }
+.pmetal { fill: url(#gMetal); }
+.pmetaledge { fill: var(--metal-lo); }
+.pkneem { fill: url(#gMetal); }
+.pboot  { fill: var(--coat-lo); }
+.prubber  { fill: url(#gRubber); }
+.prubber2 { fill: var(--rubber-hi); }
+.pgask    { fill: var(--rubber-lo); }
+.pcollar  { fill: var(--coat); }
+.pcollar2 { fill: var(--coat-lo); }
+.plabel   { fill: #9aa3ad; }
+
+/* --- 光影层：主光高光 / 边光 / 环境遮蔽 --- */
+.pspec { fill: #ffffff; }
+.prim  { fill: none; stroke: #c8d4e2; }
+.pao   { fill: #000; }
+.pshield { fill: var(--emblem); }
+.pblack  { fill: #14171c; }
 
 /* 裙甲 / 膝甲 / 颈圈 —— 原版这三块都是显眼的部件 */
 .pskirt { fill: var(--arm-b); }
@@ -108,6 +152,19 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 #vHi  { stop-color: var(--visor-hi); }
 #vMid { stop-color: var(--visor); }
 #vLo  { stop-color: var(--visor-lo); }
+/* 织物 / 金属 / 橡胶 / 涂装 的分层色标 */
+#cHi  { stop-color: var(--coat-hi); }
+#cMid { stop-color: var(--coat); }
+#cLo  { stop-color: var(--coat-lo); }
+#mHi  { stop-color: var(--metal-hi); }
+#mMid { stop-color: var(--metal); }
+#mLo  { stop-color: var(--metal-lo); }
+#rHi  { stop-color: var(--rubber-hi); }
+#rMid { stop-color: var(--rubber); }
+#rLo  { stop-color: var(--rubber-lo); }
+#tHi  { stop-color: var(--trim-hi); }
+#tMid { stop-color: var(--trim); }
+#tLo  { stop-color: var(--trim-lo); }
 #sHi  { stop-color: var(--shell-hi); }
 #sMid { stop-color: var(--arm-a); }
 #sLo  { stop-color: var(--arm-c); }
@@ -163,6 +220,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #101215; --cape-mark: #5a616a;
   --gun-a: #2e3238; --gun-b: #454b53;
   --bulk: 1.02;
+  --coat: #1e2126; --coat-hi: #2f3339; --coat-lo: #101215;
+  --metal: #565c65; --metal-hi: #7d838d; --metal-lo: #383d44;
+  --rubber: #17191d; --rubber-hi: #2a2e34; --rubber-lo: #0c0e11;
 }
 #stage.skin-b22 .cm-plain { display: block; }
 
@@ -176,6 +236,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #323c2a; --cape-mark: #b4c199;
   --gun-a: #4a4c3c; --gun-b: #646856;
   --bulk: 0.94;
+  --coat: #5d5639; --coat-hi: #7c7353; --coat-lo: #3b3626;
+  --metal: #8a8266; --metal-hi: #b0a883; --metal-lo: #5a5540;
+  --rubber: #3b3626; --rubber-hi: #5d5639; --rubber-lo: #24211a;
 }
 #stage.skin-sc34 .cm-stripes { display: block; }
 
@@ -189,6 +252,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #1b2620; --cape-mark: #c79a45;
   --gun-a: #3d463c; --gun-b: #576357;
   --bulk: 1.1;
+  --coat: #2c392f; --coat-hi: #3e4d43; --coat-lo: #18201b;
+  --metal: #5a6d5e; --metal-hi: #8a9d8e; --metal-lo: #3a443c;
+  --rubber: #18201b; --rubber-hi: #2c392f; --rubber-lo: #0f140f;
 }
 #stage.skin-fs23 .cm-skull { display: block; }
 
@@ -202,6 +268,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #1d2418; --cape-mark: #c96f2e;
   --gun-a: #3a412f; --gun-b: #525c44;
   --bulk: 1;
+  --coat: #2c3322; --coat-hi: #3d4632; --coat-lo: #191e14;
+  --metal: #566347; --metal-hi: #859471; --metal-lo: #38402c;
+  --rubber: #191e14; --rubber-hi: #2c3322; --rubber-lo: #10130c;
 }
 #stage.skin-a35 .cm-plain { display: block; }
 
@@ -215,6 +284,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #1d3523; --cape-mark: #ddd8b8;
   --gun-a: #3c473b; --gun-b: #566358;
   --bulk: 1;
+  --coat: #2c5030; --coat-hi: #3f7041; --coat-lo: #172b1b;
+  --metal: #5b945e; --metal-hi: #8fc092; --metal-lo: #3b6140;
+  --rubber: #172b1b; --rubber-hi: #2c5030; --rubber-lo: #0e1a11;
 }
 #stage.skin-tr117 .cm-eagle { display: block; }
 
@@ -230,15 +302,17 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --gun-a: #5e564c; --gun-b: #7c7365;
   --mask: #8f8674; --mask-in: #2e2a22;
   --bulk: 0.96;
+  --coat: #8b7350; --coat-hi: #b3936a; --coat-lo: #463a2c;
+  --metal: #9c8a6a; --metal-hi: #c2ac86; --metal-lo: #6a5c44;
+  --rubber: #463a2c; --rubber-hi: #6b5a45; --rubber-lo: #2b2319;
 }
 #stage.skin-ce74 .cm-stripes { display: block; }
-/* CE-74 的下半身是红色工装裤，不是卡其护腿 —— 参考图里红裤配卡其护膝/护肩，
-   红色才是这套最好认的特征。腿用的是通用 .pb（和其它部位共用 --arm-b），
-   所以这里按 id 单独压色，不动 --arm-b 以免波及全身板甲。 */
-#stage.skin-ce74 #legs .pb { fill: #9c2b22; }
-#stage.skin-ce74 #legs .plg { fill: #e0d8c6; opacity: 0.3; }
-/* 护膝用卡其色（--arm-a），不是通用的金色 trim —— 参考图就是红裤配卡其护膝 */
-#stage.skin-ce74 #legs .pknee { fill: var(--arm-a); }
+/* CE-74 的下半身是红色工装裤，不是卡其护腿 —— 参考图里红裤配卡其护肩/护膝，
+   红色才是这套最好认的特征。腿用通用的 .pcoat（和其它部位共用 --coat），
+   所以按 id 单独压色，不动全局变量以免波及全身。 */
+#stage.skin-ce74 #legs .pcoat { fill: #9c2b22; }
+#stage.skin-ce74 #legs .pcoat2 { fill: #7d1f19; }
+#stage.skin-ce74 #legs .pkneem { fill: var(--arm-a); }
 
 /* --- CW-22 Kodiak（重甲 / 熊）---
    参考图：深灰头盔 + 红目镜 + 浅灰裙甲 */
@@ -251,6 +325,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #6e6458; --cape-mark: #9a9083;
   --gun-a: #43484f; --gun-b: #5f6670;
   --bulk: 1.18;
+  --coat: #42464c; --coat-hi: #5a6067; --coat-lo: #22252a;
+  --metal: #79808a; --metal-hi: #a4acb6; --metal-lo: #4e545c;
+  --rubber: #22252a; --rubber-hi: #3d4249; --rubber-lo: #141619;
 }
 #stage.skin-cw22 .cm-skull { display: block; }
 
@@ -265,6 +342,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #1e3555; --cape-mark: #4d7099;
   --gun-a: #38445a; --gun-b: #52637b;
   --bulk: 0.96;
+  --coat: #24344d; --coat-hi: #33496a; --coat-lo: #131b28;
+  --metal: #4b668c; --metal-hi: #7a97be; --metal-lo: #30445f;
+  --rubber: #131b28; --rubber-hi: #24344d; --rubber-lo: #0c1119;
 }
 #stage.skin-cw4 .cm-stars { display: block; }
 
@@ -279,6 +359,9 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   --cape-a: #8b8674; --cape-mark: #b6b0a0;
   --gun-a: #47463e; --gun-b: #635f55;
   --bulk: 1.02;
+  --coat: #a49f8d; --coat-hi: #cdc8b6; --coat-lo: #55513f;
+  --metal: #b0aa98; --metal-hi: #d6d0be; --metal-lo: #75705f;
+  --rubber: #55513f; --rubber-hi: #7d7867; --rubber-lo: #38352a;
 }
 #stage.skin-cw9 .cm-eagle { display: block; }
 
@@ -424,8 +507,8 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
   transform-box: view-box;
   transition: transform 0.14s ease-out;
 }
-#diver #leg-l { transform-origin: -18px -100px; }
-#diver #leg-r { transform-origin: 18px -100px; }
+#diver #leg-l { transform-origin: -10px -113px; }
+#diver #leg-r { transform-origin: 10px -113px; }
 #stage.is-walk #leg-l { animation: stepL 0.52s ease-in-out infinite; }
 #stage.is-walk #leg-r { animation: stepR 0.52s ease-in-out infinite; }
 @keyframes stepL {
@@ -945,6 +1028,12 @@ body { font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif; }
 #stage.is-peek #bubble,
 #stage.is-peek #hint { opacity: 0; }
 
+/* 出图调试用：--shot 传 clean 可以只留桌宠本体（藏气泡/武器/指示器），方便和参考图对位 */
+#stage.clean #bubble,
+#stage.clean #hint,
+#stage.clean #mood,
+#stage.clean #focus { opacity: 0 !important; }
+#stage.clean .wep { display: none !important; }
 /* ==========================================================================
    士气指示器
    --------------------------------------------------------------------------

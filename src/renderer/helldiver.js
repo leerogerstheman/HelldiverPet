@@ -240,30 +240,57 @@ window.HELLDIVER_SVG = `
     </radialGradient>
 
     <!-- 面罩：镜面反射渐变，颜色由 CSS 变量驱动 -->
-    <linearGradient id="gVisor" x1="0.15" y1="0" x2="0.6" y2="1">
+    <linearGradient id="gVisor" x1="0.12" y1="0" x2="0.6" y2="1">
       <stop id="vHi" offset="0%"   stop-color="#ffffff"/>
-      <stop id="vMid" offset="45%" stop-color="#c6cfda"/>
+      <stop id="vMid" offset="40%"  stop-color="#c6cfda"/>
       <stop id="vLo" offset="100%" stop-color="#7d8794"/>
     </linearGradient>
-    <linearGradient id="gShell" x1="0.2" y1="0" x2="0.7" y2="1">
+    <!-- 盔壳：深色金属，主光来自左上 -->
+    <linearGradient id="gShell" x1="0.18" y1="0" x2="0.78" y2="1">
       <stop id="sHi" offset="0%"   stop-color="#5c646e"/>
-      <stop id="sMid" offset="55%" stop-color="#3a4048"/>
+      <stop id="sMid" offset="50%"  stop-color="#3a4048"/>
       <stop id="sLo" offset="100%" stop-color="#24282e"/>
     </linearGradient>
+    <!-- 风衣 / 战术服：哑光织物 -->
+    <linearGradient id="gCoat" x1="0.12" y1="0" x2="0.88" y2="1">
+      <stop id="cHi" offset="0%"   stop-color="#4a5058"/>
+      <stop id="cMid" offset="42%"  stop-color="#2f343b"/>
+      <stop id="cLo" offset="100%" stop-color="#191c21"/>
+    </linearGradient>
+    <!-- 金属护片：胫甲 / 前臂护具 -->
+    <linearGradient id="gMetal" x1="0.14" y1="0" x2="0.82" y2="1">
+      <stop id="mHi" offset="0%"   stop-color="#98a1ab"/>
+      <stop id="mMid" offset="48%"  stop-color="#6b737d"/>
+      <stop id="mLo" offset="100%" stop-color="#3d434b"/>
+    </linearGradient>
+    <!-- 橡胶 / 塑料：面罩胶条、呼吸面甲 -->
+    <linearGradient id="gRubber" x1="0.2" y1="0" x2="0.72" y2="1">
+      <stop id="rHi" offset="0%"   stop-color="#474d55"/>
+      <stop id="rMid" offset="54%"  stop-color="#2a2e34"/>
+      <stop id="rLo" offset="100%" stop-color="#15171b"/>
+    </linearGradient>
+    <!-- 黄色涂装：有漆面高光，不是平涂 -->
+    <linearGradient id="gTrim" x1="0.1" y1="0" x2="0.65" y2="1">
+      <stop id="tHi" offset="0%"   stop-color="#ffe694"/>
+      <stop id="tMid" offset="46%"  stop-color="#f2c230"/>
+      <stop id="tLo" offset="100%" stop-color="#a87615"/>
+    </linearGradient>
+    <!-- 披风的编织网纹 -->
+    <pattern id="pMesh" width="5" height="5" patternUnits="userSpaceOnUse">
+      <path d="M0 0 L5 5 M5 0 L0 5" stroke="#ffffff" stroke-width="0.5" opacity="0.055"/>
+    </pattern>
 
     <clipPath id="helmetClip">
-      <path d="M -38 -232 Q -40 -256, 0 -257 Q 40 -256, 38 -232
-               L 36 -206 Q 35 -188, 24 -186 L -24 -186 Q -35 -188, -36 -206 Z"/>
+      <path d="M -16 -240 Q -16.4 -254 0 -256.5 Q 16.4 -254 16 -240
+               L 14 -225 Q 12.4 -214 6.8 -212.4 L -6.8 -212.4 Q -12.4 -214 -14 -225 Z"/>
+    </clipPath>
+    <clipPath id="visorClip">
+      <path d="M -14.4 -235.2 Q 0 -238.2 14.4 -235.2 L 13.8 -225.2 L 7.8 -220.8 L 0 -223.2
+               L -7.8 -220.8 L -13.8 -225.2 Z"/>
     </clipPath>
     <clipPath id="capeClip">
-      <path d="M -32 -180 C -56 -144, -62 -80, -52 -24 C -34 -38, -15 -44, 0 -44
-               C 15 -44, 34 -38, 52 -24 C 62 -80, 56 -144, 32 -180 Z"/>
-    </clipPath>
-    <!-- 面罩裁剪：视线跟随时高光要在面罩内部滑动，不能溢出到盔壳上。
-         id 是全局的，注意别和别的 clipPath 撞名。 -->
-    <clipPath id="visorClip">
-      <path d="M -34 -231 Q 0 -236, 34 -231 L 33 -210 L 25 -204 L 17 -210
-               L 0 -207 L -17 -210 L -25 -204 L -33 -210 Z"/>
+      <path d="M -26 -196 C -44 -156, -50 -100, -44 -56 C -28 -66, -12 -70, 0 -70
+               C 12 -70, 28 -66, 44 -56 C 50 -100, 44 -156, 26 -196 Z"/>
     </clipPath>
   </defs>
 
@@ -271,107 +298,125 @@ window.HELLDIVER_SVG = `
   <g id="diver">
 
     <!-- 投影 -->
-    <ellipse id="shadow" cx="0" cy="4" rx="50" ry="10" fill="url(#gShadow)" pointer-events="none"/>
+    <ellipse id="shadow" cx="0" cy="4" rx="46" ry="9" fill="url(#gShadow)" pointer-events="none"/>
 
-    <!-- ================= 披风（近黑深灰） ================= -->
+    <!-- ================= 披风（织网质感，最靠里层） ================= -->
     <g id="cape" pointer-events="none">
-      <path class="pc" d="M -32 -180 C -56 -144, -62 -80, -52 -24 C -34 -38, -15 -44, 0 -44
-                           C 15 -44, 34 -38, 52 -24 C 62 -80, 56 -144, 32 -180 Z"/>
-      <path class="pcape-shade" d="M 0 -180 C 18 -154, 30 -96, 26 -44 C 18 -43, 8 -43, 0 -44 Z"/>
+      <path class="pc" d="M -26 -196 C -44 -156, -50 -100, -44 -56 C -28 -66, -12 -70, 0 -70
+                           C 12 -70, 28 -66, 44 -56 C 50 -100, 44 -156, 26 -196 Z"/>
       <g clip-path="url(#capeClip)">
+        <rect x="-52" y="-200" width="104" height="150" fill="url(#pMesh)"/>
         <g class="cape-marks cm-plain"></g>
         <g class="cape-marks cm-stars">${CAPE_MARKS.stars}</g>
         <g class="cape-marks cm-stripes">${CAPE_MARKS.stripes}</g>
         <g class="cape-marks cm-eagle">${CAPE_MARKS.eagle}</g>
         <g class="cape-marks cm-skull">${CAPE_MARKS.skull}</g>
       </g>
-      <path class="pcline" d="M -32 -180 C -46 -166, -56 -150, -61 -134" fill="none" stroke-width="2"/>
-      <path class="pcline" d="M 32 -180 C 46 -166, 56 -150, 61 -134" fill="none" stroke-width="2"/>
+      <!-- 左缘冷光边（主光在左上） -->
+      <path class="prim" d="M -26 -196 C -40 -162, -47 -116, -45 -74" fill="none" stroke-width="1.6" opacity="0.5"/>
+      <path class="pcline" d="M 26 -196 C 42 -164, 49 -150, 51 -136" fill="none" stroke-width="1.6"/>
     </g>
 
-    <!-- ================= 腿 ================= -->
+    <!-- ================= 腿 =================
+         比例按官方正面图量：靴 -30..0 · 胫甲 -64..-30 · 膝 -80..-62 · 大腿 -120..-78 -->
     <g id="legs" pointer-events="none">
       <g id="leg-l">
-        <path class="pb" d="M -29 -104 L -27 -50 L -28 -34 L -8 -34 L -7 -50 L -8 -104 Z"/>
-        <path class="plg" d="M -27 -100 L -25 -56 L -10 -56 L -11 -100 Z"/>
-        <!-- 膝甲 -->
-        <path class="pknee" d="M -28 -50 L -8 -50 L -9 -34 L -29 -34 Z"/>
-        <path class="pb" d="M -28 -34 L -9 -34 L -9 -10 L -29 -10 Z"/>
-        <path class="psole" d="M -30 -10 L -7 -10 L -7 0 L -34 0 Z"/>
+        <!-- 大腿：官方正面图上大腿约 17 单位宽，不是细棍 -->
+        <path class="pcoat" d="M -19 -113 L -2 -113 L -2.5 -74 L -20 -74 Z"/>
+        <path class="pcoat2" d="M -19 -113 L -12 -113 L -12.5 -74 L -20 -74 Z" opacity="0.5"/>
+        <!-- 大腿绑带扣 -->
+        <rect class="pbb" x="-19.5" y="-99" width="9" height="5.4" rx="1.3" transform="rotate(-5 -15 -96.3)"/>
+        <!-- 膝盖护片：亮面圆顶 -->
+        <path class="pkneem" d="M -20 -72 Q -11 -78.5 -2 -72 L -2.5 -58 Q -11 -52 -21 -58 Z"/>
+        <path class="prim" d="M -18.4 -71 Q -11 -75.4 -5 -71" fill="none" stroke-width="1.5" opacity="0.55"/>
+        <!-- 膝盖黄弧（压在护片上沿） -->
+        <path class="pt" d="M -21.6 -72.4 Q -11 -79.8 -0.4 -72.8 L -0.4 -68.6 Q -11 -75.2 -21.6 -68.2 Z"/>
+        <!-- 胫甲 -->
+        <path class="pmetal" d="M -20.5 -58 L -2.5 -58 L -3 -28 L -21 -28 Z"/>
+        <path class="pmetaledge" d="M -2.5 -58 L -3 -28 L -6.6 -28 L -6 -58 Z" opacity="0.55"/>
+        <!-- 靴子 -->
+        <path class="pboot" d="M -21 -28 L -3 -28 L -3.6 -8 L 5.4 -8 L 6 0 L -22 0 Z"/>
+        <path class="psole" d="M -22 0 L 6 0 L 5.4 3.2 L -22.6 3.2 Z"/>
+        <path class="prim" d="M -20.4 -26 L -3 -26" fill="none" stroke-width="1.3" opacity="0.4"/>
       </g>
       <g id="leg-r">
-        <path class="pb" d="M 8 -104 L 7 -50 L 8 -34 L 29 -34 L 27 -50 L 29 -104 Z"/>
-        <path class="plg" d="M 11 -100 L 10 -56 L 25 -56 L 27 -100 Z"/>
-        <path class="pknee" d="M 8 -50 L 28 -50 L 29 -34 L 8 -34 Z"/>
-        <path class="pb" d="M 8 -34 L 29 -34 L 28 -10 L 9 -10 Z"/>
-        <path class="psole" d="M 7 -10 L 30 -10 L 34 0 L 6 0 Z"/>
+        <path class="pcoat" d="M 2 -113 L 19 -113 L 20 -74 L 2.5 -74 Z"/>
+        <path class="pcoat2" d="M 12 -113 L 19 -113 L 20 -74 L 12.5 -74 Z" opacity="0.5"/>
+        <rect class="pbb" x="10.5" y="-99" width="9" height="5.4" rx="1.3" transform="rotate(5 15 -96.3)"/>
+        <path class="pkneem" d="M 2 -72 Q 11 -78.5 20 -72 L 21 -58 Q 11 -52 2.5 -58 Z"/>
+        <path class="prim" d="M 5 -71 Q 11 -75.4 17 -71" fill="none" stroke-width="1.5" opacity="0.55"/>
+        <path class="pt" d="M 0.4 -72.8 Q 11 -79.8 21.6 -72.4 L 21.6 -68.2 Q 11 -75.2 0.4 -68.6 Z"/>
+        <path class="pmetal" d="M 2.5 -58 L 20.5 -58 L 21 -28 L 3 -28 Z"/>
+        <path class="pmetaledge" d="M 6 -58 L 6.6 -28 L 3 -28 L 2.5 -58 Z" opacity="0.55"/>
+        <path class="pboot" d="M 3 -28 L 21 -28 L 22 0 L 6 0 L 5.4 -8 L 3 -28 Z"/>
+        <path class="psole" d="M 6 0 L 22.6 3.2 L 22 0 Z"/>
       </g>
-    </g>
-
-    <!-- ================= 裙甲（腰带下方那块带亮黄描边的） ================= -->
-    <g pointer-events="none">
-      <path class="pskirt" d="M -33 -108 L 33 -108 L 39 -80 Q 0 -74, -39 -80 Z"/>
-      <path class="ptl" d="M -33 -106 L -38 -80 Q 0 -74, 38 -80 L 33 -106" stroke-width="2.6" opacity="0.95"/>
-      <path class="ptl" d="M 0 -104 L 0 -76" stroke-width="2.4" opacity="0.95"/>
     </g>
 
     <!-- ================= 身体 ================= -->
     <g class="part-body">
 
       <g class="torso">
-        <!-- 躯干主体 -->
-        <path class="pa" d="M -34 -178 Q -42 -164, -40 -148 L -36 -126 Q -34 -116, -23 -114
-                             L 23 -114 Q 34 -116, 36 -126 L 40 -148 Q 42 -164, 34 -178 Z"/>
-        <!-- 上胸抬高片 -->
-        <path class="pb" d="M -30 -174 Q 0 -181, 30 -174 L 28 -158 Q 0 -152, -28 -158 Z"/>
-        <!-- 胸甲下沿 -->
-        <path class="pc" d="M -38 -146 L 38 -146 L 37 -134 Q 0 -128, -37 -134 Z"/>
+        <!-- 外层风衣（躯干主体） -->
+        <path class="pcoat" d="M -23 -203 Q -28 -184, -24.5 -158 L -22.5 -130 Q -23.5 -116, -24.5 -106
+                              L 24.5 -106 Q 23.5 -116, 22.5 -130 L 24.5 -158 Q 28 -184, 23 -203 Z"/>
+        <path class="pcoat2" d="M 16 -160 Q 20 -130, 21 -106 L 24.5 -106 Q 23.5 -116, 22.5 -130 L 24.5 -158 Z" opacity="0.6"/>
+        <path class="pao" d="M -3.4 -156 L 3.4 -156 L 4.6 -106 L -4.6 -106 Z" opacity="0.6"/>
+        <!-- 前襟黄边：腰带扣往下，再左右分叉（官方图就是这样） -->
+        <path class="ptl" d="M 0 -150 L 0 -134 L -5 -126 L -23 -117" stroke-width="2.3" opacity="0.95"/>
+        <path class="ptl" d="M 0 -150 L 0 -134 L 6 -127 L 23 -118" stroke-width="2.3" opacity="0.95"/>
+        <!-- 下摆黄边 -->
+        <path class="ptl" d="M -24.5 -108 Q 0 -103.4 24.5 -108" stroke-width="1.9" opacity="0.9"/>
 
-        <!-- 胸口黄色斜带：从肩部向内下收成 V（原版最显眼的特征） -->
-        <path class="pt" d="M -37 -170 L -32 -168 L -16 -150 L -22 -147 Z"/>
-        <path class="pt" d="M 37 -170 L 32 -168 L 16 -150 L 22 -147 Z"/>
+        <!-- 胸口护板 -->
+        <path class="pa" d="M -22 -202 L 22 -202 L 24 -181 Q 0 -175, -24 -181 Z"/>
+        <path class="prim" d="M 22 -201 L 23.6 -181.6" fill="none" stroke-width="1.3" opacity="0.4"/>
+        <!-- 黄色 V 形胸带：肩部向内下收成 V（官方图最显眼的结构） -->
+        <path class="pt" d="M -30 -199 L -24.5 -201.5 L -3.5 -182 L -9.5 -178.5 Z"/>
+        <path class="pt" d="M 30 -199 L 24.5 -201.5 L 3.5 -182 L 9.5 -178.5 Z"/>
         <!-- 横向黄带 -->
-        <path class="pt" d="M -32 -152 L 32 -152 L 31 -146 L -31 -146 Z"/>
-        <!-- 横带正中的金属扣具 -->
-        <rect class="pbb" x="-5" y="-153" width="10" height="8" rx="1.5"/>
+        <path class="pt" d="M -19.5 -177.5 L 19.5 -177.5 L 19 -171.5 L -19 -171.5 Z"/>
+        <rect class="pbb" x="-5" y="-178" width="10" height="7.5" rx="1.5"/>
+        <!-- 飞行员翼章（Super Earth） -->
+        ${wingBadge(0, -190, 0.33, 'peagle')}
 
-        <!-- 飞行员翼章 -->
-        ${wingBadge(0, -163, 0.58, 'peagle')}
-
-        <!-- 肩甲 -->
-        <path class="pa" d="M -58 -164 Q -61 -184, -45 -190 Q -30 -194, -27 -180
-                             Q -26 -164, -37 -156 Q -53 -150, -58 -164 Z"/>
-        <path class="pa" d="M 58 -164 Q 61 -184, 45 -190 Q 30 -194, 27 -180
-                           Q 26 -164, 37 -156 Q 53 -150, 58 -164 Z"/>
-        <path class="ptl" d="M -54 -176 Q -48 -187, -34 -188" stroke-width="2.6" stroke-linecap="round"/>
-        <path class="ptl" d="M 54 -176 Q 48 -187, 34 -188" stroke-width="2.6" stroke-linecap="round"/>
-        <!-- 肩外侧的黄色斜条（原版是顺着肩线走的一道，不是色块） -->
-        <path class="pt" d="M -56 -178 L -50 -181 L -38 -170 L -44 -167 Z"/>
-        <path class="pt" d="M 56 -178 L 50 -181 L 38 -170 L 44 -167 Z"/>
-        ${skull(-40, -176, 0.5, 'pt')}
-        ${skull(40, -176, 0.5, 'pt')}
+        <!-- 肩甲：多边形板件，外缘比躯干还宽（官方图肩甲伸到 x≈±46） -->
+        <path class="pa" d="M -21 -203 Q -36 -206.5, -46 -196 Q -50.5 -184, -44 -173.5
+                             L -26 -169 Q -21.5 -185, -21 -203 Z"/>
+        <path class="pa" d="M 21 -203 Q 36 -206.5, 46 -196 Q 50.5 -184, 44 -173.5
+                           L 26 -169 Q 21.5 -185, 21 -203 Z"/>
+        <!-- 肩甲上的黄色折角 -->
+        <path class="pt" d="M -43 -196 L -36.5 -200 L -31 -185 L -38 -181.5 Z"/>
+        <path class="pt" d="M 43 -196 L 36.5 -200 L 31 -185 L 38 -181.5 Z"/>
+        <!-- 肩甲边缘高光 -->
+        <path class="ptl" d="M -44 -194 Q -34 -203, -22 -201.5" stroke-width="1.7" stroke-linecap="round" opacity="0.65"/>
+        <path class="ptl" d="M 44 -194 Q 34 -203, 22 -201.5" stroke-width="1.7" stroke-linecap="round" opacity="0.65"/>
+        ${skull(-39, -188, 0.44, 'pt')}
+        ${skull(39, -188, 0.44, 'pt')}
 
         <!-- 腰带 -->
-        <path class="pc" d="M -35 -118 L 35 -118 L 34 -104 Q 0 -99, -34 -104 Z"/>
-        <rect class="pb" x="-32" y="-116" width="14" height="13" rx="2.5"/>
-        <rect class="pb" x="18" y="-116" width="14" height="13" rx="2.5"/>
-        <rect class="pbb" x="-6" y="-118" width="13" height="15" rx="2.5"/>
-        ${skull(0, -110, 0.5, 'pt')}
+        <path class="pc" d="M -20 -158 L 20 -158 L 19.5 -147.5 Q 0 -144.5, -19.5 -147.5 Z"/>
+        <path class="plabel" d="M -15 -155 L -8 -155 L -8 -149.5 L -15 -149.5 Z" opacity="0.85"/>
+        <!-- 骷髅扣 -->
+        <rect class="pbb" x="-5" y="-159" width="10" height="12" rx="2.5"/>
+        ${skull(0, -153, 0.46, 'pt')}
       </g>
 
       <!-- 敬礼臂：两段式骨骼，锚点在肩 -->
-      <g transform="translate(-38 -176)">
+      <g transform="translate(-33 -196)">
         <g class="upper">
-          <path class="pc" d="M 0 0 L -2 26" fill="none" stroke-width="19" stroke-linecap="round"/>
-          <path class="pah" d="M 0 0 L -2 26" fill="none" stroke-width="5" stroke-linecap="round" opacity="0.4"/>
-          <path class="ptarm" d="M -9 -8 L 2 -12" stroke-width="6" stroke-linecap="round" opacity="0.95"/>
+          <path class="pstroked" d="M 0 0 L -2 26" stroke-width="22" stroke-linecap="round"/>
+          <path class="pstroke" d="M 0 0 L -2 26" stroke-width="19" stroke-linecap="round"/>
+          <path class="pstrokeh" d="M -4 1 L -6 25" stroke-width="5" stroke-linecap="round"/>
+          <path class="ptarm" d="M -9 -8 L 2 -12" stroke-width="5.5" stroke-linecap="round" opacity="0.95"/>
           <g transform="translate(-2 26)">
             <g class="forearm">
-              <path class="pc" d="M 0 0 L 1 24" fill="none" stroke-width="15" stroke-linecap="round"/>
-              <path class="pah" d="M 0 0 L 1 24" fill="none" stroke-width="4.5" stroke-linecap="round" opacity="0.4"/>
-              <circle class="ph" cx="2" cy="29" r="9"/>
-              <circle class="phs" cx="2" cy="29" r="9" fill="none" stroke-width="1.4"/>
-              <path class="ptl" d="M -3 25 L 7 25" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+              <path class="pstroked" d="M 0 0 L 1 24" stroke-width="18" stroke-linecap="round"/>
+              <path class="pstroke" d="M 0 0 L 1 24" stroke-width="15" stroke-linecap="round"/>
+              <path class="pstrokeh" d="M -4 1 L -3 23" stroke-width="4" stroke-linecap="round"/>
+              <circle class="ph" cx="2" cy="29" r="8"/>
+              <circle class="phs" cx="2" cy="29" r="8" fill="none" stroke-width="1.2"/>
+              <path class="ptl" d="M -2 25 L 6 25" stroke-width="1.9" stroke-linecap="round" opacity="0.8"/>
             </g>
           </g>
         </g>
@@ -380,80 +425,99 @@ window.HELLDIVER_SVG = `
 
     <!-- ================= 武器 =================
          六款共用一个挂点，靠 CSS 显示当前选中的那一款 -->
-    <g transform="translate(40 -138) rotate(-30) scale(0.72)" pointer-events="none">
+    <g transform="translate(36 -142) rotate(-30) scale(0.72)" pointer-events="none">
       ${Object.keys(WEAPONS)
         .map((k) => `<g id="gun-${k}" class="wep wep-${k}">${WEAPONS[k]}</g>`)
         .join('\n      ')}
     </g>
 
     <!-- 持枪臂：画在枪之后，手才像是握着枪 -->
-    <g transform="translate(38 -176)">
+    <g transform="translate(33 -182)">
       <g id="arm-gun">
-        <path class="pc" d="M 0 0 L 5 26 L -11 44" fill="none" stroke-width="19"
+        <path class="pstroked" d="M 0 0 L 5 26 L -4 44" stroke-width="22"
               stroke-linecap="round" stroke-linejoin="round"/>
-        <path class="pah" d="M 0 0 L 5 26 L -11 44" fill="none" stroke-width="5"
-              stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
-        <path class="ptarm" d="M -1 -8 L 10 -12" stroke-width="6" stroke-linecap="round" opacity="0.95"/>
-        <circle class="ph" cx="-12" cy="48" r="9"/>
-        <circle class="phs" cx="-12" cy="48" r="9" fill="none" stroke-width="1.4"/>
-        <path class="ptl" d="M -17 44 L -7 44" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+        <path class="pstroke" d="M 0 0 L 5 26 L -4 44" stroke-width="19"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="pstrokeh" d="M -4 1 L 1 25 L -8 42" stroke-width="5"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="ptarm" d="M -1 -8 L 10 -12" stroke-width="5.5" stroke-linecap="round" opacity="0.95"/>
+        <circle class="ph" cx="-4" cy="48" r="8"/>
+        <circle class="phs" cx="-4" cy="48" r="8" fill="none" stroke-width="1.2"/>
+        <path class="ptl" d="M -9 44 L 1 44" stroke-width="1.9" stroke-linecap="round" opacity="0.8"/>
       </g>
     </g>
 
-    <!-- ================= 头盔 ================= -->
+    <!-- ================= 头盔 =================
+         官方正面图上头盔接近正圆（宽 29 / 高 32 个局部单位），
+         之前拉成 31×45 的长条，看起来就像「小脑袋长脖子」。 -->
     <g id="head" class="part-head">
-      <!-- 颈圈 -->
-      <path class="pcollar" d="M -22 -192 L 22 -192 L 20 -182 L -20 -182 Z"/>
+      <!-- 颈圈（织物质感） -->
+      <path class="pcollar" d="M -16 -218 L 16 -218 L 15.2 -206 Q 0 -202.6, -15.2 -206 Z"/>
+      <path class="pcollar2" d="M -16 -217 L -13 -218.2 L -12.4 -207 L -15 -207.4 Z" opacity="0.55"/>
 
       <!-- 盔壳 -->
-      <path class="pshell" d="M -38 -232 Q -40 -256, 0 -257 Q 40 -256, 38 -232
-                              L 36 -206 Q 35 -188, 24 -186 L -24 -186 Q -35 -188, -36 -206 Z"/>
-      <!-- 中央脊线 -->
-      <path class="pshell2" d="M -5 -255 L 5 -255 L 6 -234 L -6 -234 Z" opacity="0.45"/>
+      <path class="pshell" d="M -16 -240 Q -16.4 -254 0 -256.5 Q 16.4 -254 16 -240
+                              L 14 -225 Q 12.4 -214 6.8 -212.4 L -6.8 -212.4
+                              Q -12.4 -214 -14 -225 Z"/>
+      <!-- 盔顶那条很宽的亮黄横带 -->
+      <path class="pstripe2" d="M -16.1 -239.5 Q -16.4 -254.2 0 -256.6 Q 16.4 -254.2 16.1 -239.5
+                              L 10.2 -239 Q 10.7 -250 0 -251.6 Q -10.7 -250 -10.2 -239 Z"/>
+      <!-- 盔顶主光高光 -->
+      <path class="pspec" d="M -12.8 -245 Q -10.8 -252.8 -2 -254.6 Q -8.2 -251.8 -10.8 -243.2 Z" opacity="0.4"/>
+      <!-- 盔壳下缘的环境遮蔽 -->
+      <path class="pao" d="M -13.8 -225 Q 0 -213.6 13.8 -225 Q 12.4 -214 6.8 -212.6 L -6.8 -212.6 Q -12.4 -214 -13.8 -225 Z" opacity="0.5"/>
 
-      <!-- 头盔顶部那条很宽的亮黄横带 -->
-      <g clip-path="url(#helmetClip)">
-        <rect class="pstripe stripe1" x="-42" y="-257" width="84" height="22"/>
-      </g>
-      <rect class="pstripe stripe1" x="-42" y="-257" width="84" height="22" opacity="0"/>
+      <!-- 眉沿（面罩上方的凸起边框） -->
+      <path class="pshell2" d="M -14.8 -236.6 Q 0 -240 14.8 -236.6 L 14.2 -233 Q 0 -236.4 -14.2 -233 Z" opacity="0.5"/>
 
-      <!-- 眉沿 -->
-      <path class="pshell2" d="M -35 -234 Q 0 -240, 35 -234 L 34 -227 Q 0 -233, -34 -227 Z" opacity="0.7"/>
-
+      <!-- 面罩胶条（黑色橡胶边框） -->
+      <path class="pgask" d="M -15.6 -236.2 Q 0 -239.8 15.6 -236.2 L 15 -224 L 8.4 -218.8
+                             L 0 -221.6 L -8.4 -218.8 L -15 -224 Z"/>
       <!-- 镜面银色面罩：底边是带 V 形缺口的锐角折线 -->
-      <path class="pv" d="M -34 -231 Q 0 -236, 34 -231 L 33 -210 L 25 -204 L 17 -210
-                          L 0 -207 L -17 -210 L -25 -204 L -33 -210 Z"/>
-      <!-- 镜面高光：视线跟随时跟着头的转动在面罩内滑动（镜面反光） -->
+      <path class="pv" d="M -14.4 -235.2 Q 0 -238.2 14.4 -235.2 L 13.8 -225.2 L 7.8 -220.8
+                          L 0 -223.2 L -7.8 -220.8 L -13.8 -225.2 Z"/>
+      <!-- 面罩上的镜面反光：两道竖直亮带，是「看起来很精致」的关键 -->
       <g clip-path="url(#visorClip)">
-        <path class="pgloss" d="M -25 -229 Q -14 -232, -6 -231 L -15 -208 L -26 -209 Z" opacity="0.5"/>
+        <path class="pgloss" d="M -11.8 -234.6 Q -6.8 -236 -5.2 -235 L -8 -221.6 L -12.6 -222.8 Z" opacity="0.6"/>
+        <path class="pgloss" d="M 6.8 -235.4 Q 10.8 -234.5 11.4 -233 L 9.6 -220.8 L 5.6 -222 Z" opacity="0.4"/>
       </g>
 
       <!-- 防毒面具版面罩（CE-74 Breaker 用：圆护目镜 + 滤罐） -->
       <g class="alt-face" pointer-events="none">
-        <path class="pbreath" d="M -30 -218 Q 0 -212, 30 -218 L 27 -192 Q 0 -184, -27 -192 Z"/>
-        <circle class="pmask" cx="-15" cy="-207" r="9.5"/>
-        <circle class="pmask" cx="15" cy="-207" r="9.5"/>
-        <circle class="pmaskin" cx="-15" cy="-207" r="6"/>
-        <circle class="pmaskin" cx="15" cy="-207" r="6"/>
-        <path class="pbreath2" d="M -7 -213 L 7 -213 L 6 -199 L -6 -199 Z"/>
-        <rect class="pmask" x="-4.5" y="-197" width="9" height="10" rx="2"/>
+        <path class="pbreath" d="M -13.6 -224 Q 0 -218, 13.6 -224 L 11.8 -215 Q 6.6 -211 0 -211 Q -6.6 -211 -11.8 -215 Z"/>
+        <circle class="pmask" cx="-7.8" cy="-217" r="4.4"/>
+        <circle class="pmask" cx="7.8" cy="-217" r="4.4"/>
+        <circle class="pmaskin" cx="-7.8" cy="-217" r="2.7"/>
+        <circle class="pmaskin" cx="7.8" cy="-217" r="2.7"/>
+        <path class="pbreath2" d="M -3.2 -218 L 3.2 -218 L 2.6 -209.4 L -2.6 -209.4 Z"/>
+        <rect class="pmask" x="-2.2" y="-209" width="4.4" height="4.6" rx="1"/>
       </g>
 
-      <!-- 呼吸罩主体 -->
-      <path class="pbreath" d="M -33 -208 L 33 -208 L 30 -192 Q 20 -186, 0 -186
-                               Q -20 -186, -30 -192 Z"/>
-      <!-- 中央凸起 -->
-      <path class="pbreath2" d="M -7 -204 L 7 -204 L 6 -190 L -6 -190 Z"/>
-      <!-- 两侧银白格栅（黄色框） -->
-      ${louver(-17, -197, 'pt', 'pvl')}
-      ${louver(17, -197, 'pt', 'pvl')}
+      <!-- 呼吸面甲（哑光橡胶） -->
+      <path class="prubber" d="M -13.8 -224 L 13.8 -224 L 12 -215 Q 6.6 -211 0 -211
+                               Q -6.6 -211 -12 -215 Z"/>
+      <!-- 面甲中央凸脊 -->
+      <path class="prubber2" d="M -2.6 -222.2 L 2.6 -222.2 L 3 -212.2 L -3 -212.2 Z" opacity="0.75"/>
+      <!-- 面甲竖向凹槽 -->
+      <path class="pao" d="M -0.9 -221 L 0.9 -221 L 1.1 -212.8 L -1.1 -212.8 Z" opacity="0.55"/>
+      <!-- 两侧银白竖栅（黄色框内） -->
+      <rect class="pt" x="-13.2" y="-221.6" width="7.4" height="9.6" rx="1.5"/>
+      <rect class="pvl" x="-12" y="-220.4" width="5" height="7.2" rx="0.7"/>
+      <rect class="pt" x="5.8" y="-221.6" width="7.4" height="9.6" rx="1.5"/>
+      <rect class="pvl" x="7" y="-220.4" width="5" height="7.2" rx="0.7"/>
 
-      <!-- 侧面：骷髅徽记 + 机械阀 -->
-      ${skull(-29, -226, 0.5, 'pt')}
+      <!-- 侧面：浅灰盾形骷髅标（官方图是浅色盾牌贴花，不是黄骷髅） -->
+      <g transform="translate(-10 -241) scale(0.48)">
+        <path class="pshield" d="M 0 -8 L 5.6 -5.2 L 5.6 1.6 Q 5.6 6.2 0 8.4 Q -5.6 6.2 -5.6 1.6 L -5.6 -5.2 Z"/>
+        ${skull(0, 0, 0.8, 'pblack')}
+      </g>
+      <!-- 右侧：机械阀 + 铆钉 -->
       <g class="pvalve">
-        <rect class="phs" x="26" y="-232" width="12" height="10" rx="2" fill="none" stroke-width="1.6"/>
-        <rect class="ph" x="29" y="-230" width="6" height="6" rx="1"/>
+        <rect class="phs" x="9.8" y="-244" width="5.6" height="5.2" rx="1" fill="none" stroke-width="1"/>
+        <rect class="ph" x="11" y="-242.9" width="3.2" height="3.2" rx="0.6"/>
       </g>
+      <circle class="ph" cx="-7.8" cy="-230" r="0.85"/>
+      <circle class="ph" cx="7.8" cy="-230" r="0.85"/>
     </g>
 
   </g>

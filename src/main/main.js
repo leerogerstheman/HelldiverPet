@@ -205,10 +205,16 @@ function createPetWindow() {
             );
           }
           if (state) {
+            // 状态可以带空格分隔多个 class（classList.add 不接受含空格的单个 token，
+            // 直接 add("a b") 会抛异常，截图就废了）
+            const states = state
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((c) => JSON.stringify(c))
+              .join(',');
             await win.webContents.executeJavaScript(
-              // 用 --html 加载别的页面时没有 #stage，这里必须空值保护
               `var st0=document.getElementById('stage');
-               if(st0){st0.classList.add(${JSON.stringify(state)});st0.classList.remove('is-rest');}
+               if(st0){[${states}].forEach(function(c){st0.classList.add(c);});st0.classList.remove('is-rest');}
                true;`,
             );
             await new Promise((r) => setTimeout(r, 500)); // 等动画过渡到位

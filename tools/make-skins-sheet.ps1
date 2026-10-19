@@ -2,7 +2,7 @@
 Add-Type -AssemblyName System.Drawing
 
 $skins = @('b01','b22','sc34','fs23','a35','tr117','ce74','cw22','cw4','cw9')
-$dir = 'D:\HelldiverPet\.preview\skins'
+$dir = 'D:\HelldiverPet\.preview\skins2'
 $outFile = 'D:\HelldiverPet\docs\skins-sheet.png'
 
 $cellW = 300; $cellH = 400; $cols = 5; $rows = 2; $labelH = 30

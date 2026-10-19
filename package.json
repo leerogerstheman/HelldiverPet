@@ -1,7 +1,7 @@
 {
   "name": "helldiver-pet",
   "productName": "HelldiverPet",
-  "version": "0.2.0-beta.1",
+  "version": "0.3.0-beta.1",
   "description": "绝地潜兵2 桌宠 — 一只常驻桌面的民主战士",
   "main": "src/main/main.js",
   "author": "HelldiverPet Contributors",
